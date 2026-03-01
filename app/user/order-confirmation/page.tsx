@@ -16,8 +16,9 @@ export default function OrderConfirmationPage() {
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="max-w-md mx-auto text-center space-y-8 py-12"
+      className="w-full h-full min-h-screen flex items-center justify-center px-4 py-12"
     >
+      <div className="max-w-md w-full text-center space-y-8">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -49,6 +50,7 @@ export default function OrderConfirmationPage() {
         <Button variant="outline" asChild>
           <Link href="/user/home">Continue shopping</Link>
         </Button>
+      </div>
       </div>
     </motion.div>
   );

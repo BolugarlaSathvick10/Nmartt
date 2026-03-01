@@ -127,41 +127,73 @@ export function OrderTrackingMap({
 
   return (
     <div className={className} style={{ height }}>
-      <MapContainer
-        center={[(SHOP_LOCATION.lat + user.lat) / 2, (SHOP_LOCATION.lng + user.lng) / 2]}
-        zoom={12}
-        style={{ height: "100%", width: "100%", borderRadius: "8px" }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <FitBounds userLat={user.lat} userLng={user.lng} />
-        <Marker position={[SHOP_LOCATION.lat, SHOP_LOCATION.lng]} icon={shopIcon}>
-          <Popup>
-            {SHOP_LOCATION.label}
-            <br />
-            <a href={SHOP_LOCATION.mapsUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-xs underline">
-              Open in Google Maps
-            </a>
-          </Popup>
-        </Marker>
-        <Marker position={[user.lat, user.lng]} icon={userIcon}>
-          <Popup>Your delivery address</Popup>
-        </Marker>
+      <div style={{ position: "relative", height: "100%", width: "100%" }}>
+        <MapContainer
+          center={[(SHOP_LOCATION.lat + user.lat) / 2, (SHOP_LOCATION.lng + user.lng) / 2]}
+          zoom={12}
+          style={{ height: "100%", width: "100%", borderRadius: "8px" }}
+          scrollWheelZoom={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <FitBounds userLat={user.lat} userLng={user.lng} />
+          <Marker position={[SHOP_LOCATION.lat, SHOP_LOCATION.lng]} icon={shopIcon}>
+            <Popup>
+              {SHOP_LOCATION.label}
+              <br />
+              <a href={SHOP_LOCATION.mapsUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-xs underline">
+                Open in Google Maps
+              </a>
+            </Popup>
+          </Marker>
+          <Marker position={[user.lat, user.lng]} icon={userIcon}>
+            <Popup>Your delivery address</Popup>
+          </Marker>
         {routeCoords.length > 0 && (
           <Polyline
             positions={routeCoords}
             pathOptions={{ color: "hsl(var(--primary))", weight: 4, opacity: 0.7 }}
           />
         )}
-        {showRider && riderPosition && (
-          <Marker position={riderPosition} icon={riderIcon}>
-            <Popup>Delivery partner</Popup>
-          </Marker>
-        )}
-      </MapContainer>
+          {showRider && riderPosition && (
+            <Marker position={riderPosition} icon={riderIcon}>
+              <Popup>Delivery partner</Popup>
+            </Marker>
+          )}
+        </MapContainer>
+        {/* From/To Address Labels */}
+        <div style={{
+          position: "absolute",
+          top: "12px",
+          left: "12px",
+          zIndex: 400,
+          pointerEvents: "none"
+        }}>
+          <div style={{
+            background: "rgba(0, 0, 0, 0.7)",
+            color: "white",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            fontSize: "12px",
+            fontWeight: "bold",
+            marginBottom: "8px"
+          }}>
+            🛒 From: {SHOP_LOCATION.label}
+          </div>
+          <div style={{
+            background: "rgba(0, 0, 0, 0.7)",
+            color: "white",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            fontSize: "12px",
+            fontWeight: "bold"
+          }}>
+            📍 To: {userAddress}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

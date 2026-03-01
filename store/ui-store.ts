@@ -13,7 +13,7 @@ export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
       theme: "system",
-      sidebarOpen: true,
+      sidebarOpen: false,
       setTheme: (theme) => set({ theme }),
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),

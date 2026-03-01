@@ -4,6 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store";
 import { Sidebar } from "@/components/sidebar";
+import { cn } from "@/lib/utils";
+import { useUIStore } from "@/store";
 
 function getRequiredRole(path: string): string | null {
   if (path.startsWith("/admin")) return "admin";
@@ -39,10 +41,16 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <main className="pt-4 pb-8 px-4 pl-14 lg:pl-[260px] transition-[padding]">
+      <main
+        className={cn(
+          "pt-4 pb-8 px-4 pl-14 transition-[padding]",
+          sidebarOpen ? "lg:pl-[260px]" : "lg:pl-14"
+        )}
+      >
         {children}
       </main>
     </div>
