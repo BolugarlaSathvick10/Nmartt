@@ -103,45 +103,49 @@ export default function AdminProductsPage() {
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, price } : p)));
   };
 
-  const getStockBadge = (p: Product) => {
+  function getStockBadge(p: Product) {
     if (p.upcoming) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-400">Upcoming</span>;
     if (p.stock === 0) return <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs text-destructive">Out of stock</span>;
     if (p.stock <= 5) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-400">Low</span>;
     return <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">In stock</span>;
-  };
+  }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Products</h1>
-          <p className="text-muted-foreground">Manage your product catalog</p>
+    <div className="space-y-8">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Products</h1>
+            <p className="text-sm text-gray-500 mt-1">Manage your product catalog</p>
+          </div>
+          <Button onClick={openAdd} className="bg-green-600 hover:bg-green-700 text-white">
+            <Plus className="mr-2 h-4 w-4" /> Add Product
+          </Button>
         </div>
-        <Button onClick={openAdd} className="bg-gradient-to-r from-primary to-primary/90">
-          <Plus className="mr-2 h-4 w-4" /> Add Product
-        </Button>
-      </div>
 
-      <Card className="glass-card border-white/20">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col gap-4 sm:flex-row flex-wrap">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search products..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {MOCK_CATEGORIES.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
+        <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-4 items-center mt-6">
+          <div className="relative flex-1 min-w-[200px] w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search products..."
+              className="pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 w-full"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-full md:w-[200px] border border-gray-200 rounded-lg px-3 py-2 bg-white">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {MOCK_CATEGORIES.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
               </SelectContent>
             </Select>
             <Select value={upcomingFilter} onValueChange={(v: "all" | "upcoming") => setUpcomingFilter(v)}>
-              <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectTrigger className="w-full md:w-[140px] border border-gray-200 rounded-lg px-3 py-2 bg-white">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -149,31 +153,32 @@ export default function AdminProductsPage() {
                 <SelectItem value="upcoming">Upcoming only</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="text-left p-4 font-medium">Product</th>
-                  <th className="text-left p-4 font-medium">Category</th>
-                  <th className="text-left p-4 font-medium">Price</th>
-                  <th className="text-left p-4 font-medium">Stock</th>
-                  <th className="text-right p-4 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((p) => (
-                  <tr key={p.id} className="border-b hover:bg-muted/30 transition-colors">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0">
-                          <img src={p.image} alt="" className="h-full w-full object-cover" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{p.name}</p>
-                          <p className="text-sm text-muted-foreground line-clamp-1">{p.description}</p>
+        </Card>
+
+        <Card className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left p-4 font-medium text-gray-900">Product</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Category</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Price</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Stock</th>
+                    <th className="text-right p-4 font-medium text-gray-900">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((p) => (
+                    <tr key={p.id} className="border-b hover:bg-gray-50 transition-colors">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                            <img src={p.image} alt="" className="h-full w-full object-cover" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{p.name}</p>
+                            <p className="text-sm text-gray-500 line-clamp-1">{p.description}</p>
                         </div>
                       </div>
                     </td>

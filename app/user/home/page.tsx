@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingCart, Bell } from "lucide-react";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mock-data";
 import { useCartStore, useUpcomingStore } from "@/store";
 import { formatPrice } from "@/lib/utils";
@@ -33,7 +34,7 @@ export default function UserHomePage() {
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const totalItems = useCartStore((s) => s.totalItems);
-  const { addInterest, hasInterest, getCount } = useUpcomingStore();
+  const { addInterest, removeInterest, hasInterest, getCount } = useUpcomingStore();
 
   const filtered = useMemo(() => {
     let list = regularProducts;
@@ -58,41 +59,46 @@ export default function UserHomePage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       {/* Header Section */}
-      <motion.div
+      <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        className="bg-white border-b border-gray-100"
       >
-        <div className="flex-1">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            N-Mart
-          </h1>
-          <p className="text-muted-foreground mt-1">Fresh groceries delivered to your door</p>
+        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-green-600">N-Mart</h1>
+            <p className="text-sm text-gray-500">Fresh groceries delivered to your door</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCartOpen(true)}
+                className="relative bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm hover:shadow-md transition"
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Cart
+                <AnimatePresence>
+                  {totalItems() > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-primary to-primary/90 text-xs text-white font-bold shadow-lg"
+                    >
+                      {totalItems()}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Button>
+            </motion.div>
+          </div>
         </div>
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button
-            variant="outline"
-            size="lg"
-            className="relative shadow-lg hover:shadow-primary/20 border-primary/20 hover:border-primary/40"
-            onClick={() => setCartOpen(true)}
-          >
-            <ShoppingCart className="mr-2 h-5 w-5" />
-            Cart
-            <AnimatePresence>
-              {totalItems() > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-primary to-primary/90 text-xs text-white font-bold shadow-lg"
-                >
-                  {totalItems()}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </Button>
-        </motion.div>
-      </motion.div>
+      </motion.header>
 
       {/* Search and Filter Section */}
       <motion.div
@@ -179,7 +185,7 @@ export default function UserHomePage() {
           <HorizontalProductScroll
             products={upcomingProducts}
             isInterested={hasInterest}
-            onNotifyMe={addInterest}
+            onNotifyMe={(id: string) => (hasInterest(id) ? removeInterest(id) : addInterest(id))}
             interestCount={getCount}
             title="Upcoming Products"
             description="Show interest to get notified when these are available"

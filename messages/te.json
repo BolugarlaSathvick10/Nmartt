@@ -1,0 +1,33 @@
+{
+  "sidebar": {
+    "home": "హోమ్",
+    "orders": "నా ఆర్డర్లు",
+    "profile": "ప్రొఫైల్",
+    "coupons": "కూపన్లు",
+    "support": "కస్టమర్ సపోర్ట్",
+    "faq": "ఎఫ్\u200cఏక్యూ",
+    "terms": "నిబంధనలు",
+    "logout": "లాగ్ అవుట్"
+  },
+  "buttons": {
+    "search": "వెతకండి",
+    "placeOrder": "ఆర్డర్ చేయండి",
+    "applyCoupon": "కూపన్ ఉపయోగించండి",
+    "remove": "తొలగించు",
+    "addToCart": "కార్ట్‌లో జోడించండి",
+    "track": "ట్రాక్ చేయండి",
+    "details": "వివరాలు"
+  },
+  "headings": {
+    "dashboard": "డాష్\u200cబోర్డ్",
+    "productAnalytics": "ఉత్పత్తి విశ్లేషణ",
+    "salesTrend": "అమ్మకాల ధోరణి",
+    "monthlySales": "నెలవారీ అమ్మకాలు",
+    "stockInsight": "స్టాక్ వివరాలు"
+  },
+  "cart": {
+    "title": "కార్ట్",
+    "total": "మొత్తం",
+    "items": "వస్తువులు"
+  }
+}

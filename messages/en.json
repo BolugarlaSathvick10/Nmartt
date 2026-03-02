@@ -1,0 +1,33 @@
+{
+  "sidebar": {
+    "home": "Home",
+    "orders": "My Orders",
+    "profile": "Profile",
+    "coupons": "Coupons",
+    "support": "Customer Support",
+    "faq": "FAQ",
+    "terms": "Terms & Policies",
+    "logout": "Logout"
+  },
+  "buttons": {
+    "search": "Search",
+    "placeOrder": "Place Order",
+    "applyCoupon": "Apply Coupon",
+    "remove": "Remove",
+    "addToCart": "Add to Cart",
+    "track": "Track",
+    "details": "Details"
+  },
+  "headings": {
+    "dashboard": "Dashboard",
+    "productAnalytics": "Product Analytics",
+    "salesTrend": "Sales Trend",
+    "monthlySales": "Monthly Sales",
+    "stockInsight": "Stock Insight"
+  },
+  "cart": {
+    "title": "Cart",
+    "total": "Total",
+    "items": "Items"
+  }
+}

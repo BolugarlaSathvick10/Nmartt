@@ -33,25 +33,28 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, user, isAuthenticated, router]);
 
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
+
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-pulse text-gray-500">Loading...</div>
       </div>
     );
   }
 
-  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar />
       <main
         className={cn(
-          "pt-4 pb-8 px-4 pl-14 transition-[padding]",
+          "flex-1 bg-gray-50 min-h-screen transition-[padding] duration-300",
           sidebarOpen ? "lg:pl-[260px]" : "lg:pl-14"
         )}
       >
-        {children}
+        <div className="max-w-7xl mx-auto px-8 py-8 space-y-8">
+          {children}
+        </div>
       </main>
     </div>
   );

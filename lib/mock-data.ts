@@ -11,6 +11,7 @@ export const MOCK_CATEGORIES: Category[] = [
   { id: "cat-6", name: "Staples", slug: "staples", productCount: 55 },
   { id: "cat-7", name: "Personal Care", slug: "personal-care", productCount: 55 },
   { id: "cat-8", name: "Household", slug: "household", productCount: 55 },
+  { id: "cat-9", name: "Grains & Pulses", slug: "grains-pulses", productCount: 8 },
 ];
 
 export const MOCK_PRODUCTS: Product[] = generateProducts();

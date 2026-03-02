@@ -20,6 +20,68 @@ type CheckoutForm = {
   pincode: string;
 };
 
+const COUPON_CODES: Record<string, number> = {
+  "SAVE10": 0.10,
+  "FESTIVE20": 0.20,
+  "WELCOME5": 0.05,
+};
+
+function CouponBox({ itemsTotal }: { itemsTotal: number }) {
+  const [coupon, setCoupon] = useState("");
+  const [applied, setApplied] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleApply = () => {
+    if (!coupon.trim()) {
+      setError("Enter a coupon code");
+      return;
+    }
+    if (COUPON_CODES[coupon.toUpperCase()]) {
+      setApplied(coupon.toUpperCase());
+      setError(null);
+    } else {
+      setError("Invalid coupon code");
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">Coupon Code</label>
+      <div className="flex gap-2">
+        <Input
+          placeholder="Enter coupon code"
+          value={coupon}
+          onChange={(e) => setCoupon(e.target.value)}
+          className="flex-1"
+        />
+        <Button onClick={handleApply} variant="outline">Apply</Button>
+      </div>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+      {applied && <p className="text-xs text-green-600">Coupon {applied} applied!</p>}
+    </div>
+  );
+}
+
+function getDiscountAmount(): number {
+  if (typeof document === "undefined") return 0;
+  const couponText = document.querySelector("#checkout-discount")?.textContent ?? "₹0";
+  const applied = document.querySelector(".text-green-600")?.textContent ?? "";
+  const matches = applied.match(/SAVE\d+|FESTIVE\d+|WELCOME\d+/);
+  if (!matches) return 0;
+  const code = matches[0];
+  const rate = COUPON_CODES[code];
+  if (!rate) return 0;
+  // Get subtotal from cart
+  const items = useCartStore.getState().totalAmount();
+  return Math.floor(items * rate);
+}
+
+type CheckoutForm = {
+  address: string;
+  mobile: string;
+  pincode: string;
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalAmount, clearCart } = useCartStore();
@@ -162,7 +224,10 @@ export default function CheckoutPage() {
           <CardTitle>Order summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2">
+          {/* Coupon Input */}
+          <CouponBox itemsTotal={totalAmount()} />
+
+          <ul className="space-y-2 mt-4">
             {items.map(({ product, quantity }) => (
               <li key={product.id} className="flex justify-between text-sm">
                 <span>{product.name} × {quantity}</span>
@@ -170,10 +235,22 @@ export default function CheckoutPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex justify-between font-semibold text-lg">
-            <span>Total</span>
-            <span>{formatPrice(totalAmount())}</span>
+
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between font-medium">
+              <span>Subtotal</span>
+              <span>{formatPrice(totalAmount())}</span>
+            </div>
+            <div className="flex justify-between font-medium">
+              <span>Discount</span>
+              <span id="checkout-discount">{formatPrice(getDiscountAmount())}</span>
+            </div>
+            <div className="flex justify-between font-semibold text-lg">
+              <span>Final Total</span>
+              <span id="checkout-final">{formatPrice(Math.max(0, totalAmount() - getDiscountAmount()))}</span>
+            </div>
           </div>
+
           <Button
             className="w-full mt-4 bg-gradient-to-r from-primary to-primary/90"
             onClick={form.handleSubmit(onSubmit)}

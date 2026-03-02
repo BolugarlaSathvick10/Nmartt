@@ -60,7 +60,8 @@
 
 /* Glass card utility */
 .glass-card {
-  @apply rounded-xl border border-white/20 bg-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg;
+  /* replaced translucent glass style with a solid white card for consistency */
+  @apply rounded-xl border border-gray-100 bg-white shadow-sm;
 }
 
 /* Gradient text */

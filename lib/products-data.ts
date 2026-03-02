@@ -10,6 +10,7 @@ const CATEGORIES = [
   { id: "cat-6", name: "Staples" },
   { id: "cat-7", name: "Personal Care" },
   { id: "cat-8", name: "Household" },
+  { id: "cat-9", name: "Grains & Pulses" },
 ] as const;
 
 const NAMES_BY_CATEGORY: Record<string, string[]> = {
@@ -60,6 +61,9 @@ const NAMES_BY_CATEGORY: Record<string, string[]> = {
     "Mustard Oil", "Groundnut Oil", "Coconut Oil", "Olive Oil", "Sesame Oil", "Rice Bran Oil", "Blended Oil", "Vanaspati", "Ghee Tin", "Refined Oil",
     "Turmeric", "Red Chilli", "Cumin", "Coriander Powder", "Garam Masala", "Kitchen King", "Pav Bhaji Masala", "Chole Masala", "Sambar Powder", "Rasam Powder",
     "Tamarind", "Jaggery", "Honey", "Vinegar", "Soy Sauce", "Tomato Ketchup",
+  ],
+  "cat-9": [
+    "Black Gram", "Bengal Gram", "Green Gram", "Toor Dal", "Masoor Dal", "Chana Dal", "Moong Dal", "Urad Dal"
   ],
   "cat-7": [
     "Shampoo", "Soap", "Toothpaste", "Hand Sanitizer", "Face Cream", "Body Lotion", "Deodorant", "Razor", "Shaving Cream", "Face Wash",

@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, Minus, Plus, Trash2, X } from "lucide-react";
 import { useCartStore } from "@/store";
+import { useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [mounted, setMounted] = useState(false);
   const { items, updateQuantity, removeItem, totalItems, totalAmount } =
     useCartStore();
+  const t = useTranslations();
 
   useEffect(() => {
     setMounted(true);
@@ -66,7 +68,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             className="fixed top-0 right-0 z-50 h-screen w-full sm:w-96 bg-background shadow-2xl shadow-black/20 flex flex-col border-l"
           >
             {/* Header - Fixed */}
-            <CartHeader onClose={onClose} cartItemsCount={totalItems()} />
+            <CartHeader t={t} onClose={onClose} cartItemsCount={totalItems()} />
 
             {/* Content - Scrollable Middle Section */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
@@ -100,6 +102,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             {/* Footer - Fixed Bottom */}
             {items.length > 0 && (
               <CartFooter
+                t={t}
                 totalAmount={totalAmount()}
                 totalItems={totalItems()}
                 onCheckout={goCheckout}
@@ -116,10 +119,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   return createPortal(cartContent, document.body);
 }
 
+// `t` is passed from CartDrawer to avoid duplicate hooks
 function CartHeader({
+  t,
   onClose,
   cartItemsCount,
 }: {
+  t: (key: string) => string;
   onClose: () => void;
   cartItemsCount: number;
 }) {
@@ -137,7 +143,7 @@ function CartHeader({
         >
           <ShoppingCart className="h-5 w-5 text-primary" />
         </motion.div>
-        Your Cart
+        {t("cart.title")}
       </h2>
       <motion.button
         whileHover={{ scale: 1.1 }}
@@ -153,11 +159,13 @@ function CartHeader({
 }
 
 function CartFooter({
+  t,
   totalAmount,
   totalItems,
   onCheckout,
   onContinueShopping,
 }: {
+  t: (key: string) => string;
   totalAmount: number;
   totalItems: number;
   onCheckout: () => void;
@@ -178,7 +186,7 @@ function CartFooter({
         className="flex justify-between items-center"
       >
         <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Total
+          {t("cart.total")}
         </span>
         <motion.span
           key={totalAmount}
@@ -197,7 +205,7 @@ function CartFooter({
         transition={{ delay: 0.25 }}
         className="text-xs text-muted-foreground text-center"
       >
-        {totalItems} item{totalItems !== 1 ? "s" : ""} in your cart
+        {totalItems} {t("cart.items")}{totalItems !== 1 ? "s" : ""} in your cart
       </motion.div>
 
       {/* Checkout Button */}
@@ -209,7 +217,7 @@ function CartFooter({
           onClick={onCheckout}
           className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-semibold text-base rounded-xl shadow-lg shadow-primary/30 transition-all duration-300"
         >
-          Place Order
+          {t("buttons.placeOrder")}
         </Button>
       </motion.div>
 

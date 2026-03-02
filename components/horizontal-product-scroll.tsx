@@ -140,13 +140,12 @@ export function HorizontalProductScroll({
                   >
                     <Button
                       size="sm"
-                      variant={isInterested(product.id) ? "secondary" : "default"}
+                      variant={isInterested(product.id) ? "outline" : "default"}
                       className="w-full text-xs gap-1 h-8 font-medium"
                       onClick={() => onNotifyMe(product.id)}
-                      disabled={isInterested(product.id)}
                     >
                       <Bell className="h-3 w-3" />
-                      {isInterested(product.id) ? "Subscribed" : "Notify"}
+                      {isInterested(product.id) ? "Remove Interest" : "Notify"}
                     </Button>
                   </motion.div>
 

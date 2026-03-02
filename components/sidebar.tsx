@@ -11,6 +11,7 @@ import {
   Users,
   Truck,
   Settings,
+  BarChart3,
   ChevronLeft,
   Menu,
   X,
@@ -18,9 +19,12 @@ import {
   History,
   Home,
   Boxes,
+  Ticket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/store";
+import { useTranslations } from "next-intl";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -33,6 +37,8 @@ const adminNav: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
+  { href: "/admin/product-analytics", label: "Product Analytics", icon: BarChart3 },
+  { href: "/admin/coupons", label: "Coupons & Offers", icon: Ticket },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/delivery", label: "Delivery Boys", icon: Truck },
@@ -56,6 +62,10 @@ const userNav: NavItem[] = [
   { href: "/user/home", label: "Home", icon: Home },
   { href: "/user/orders", label: "My Orders", icon: ShoppingCart },
   { href: "/user/profile", label: "Profile", icon: Users },
+  { href: "/user/coupons", label: "Coupons", icon: Ticket },
+  { href: "/user/support", label: "Customer Support", icon: ClipboardList },
+  { href: "/user/faq", label: "FAQ", icon: ClipboardList },
+  { href: "/user/terms", label: "Terms & Policies", icon: ClipboardList },
 ];
 
 function getNav(path: string): NavItem[] {
@@ -68,6 +78,7 @@ function getNav(path: string): NavItem[] {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations();
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const user = useAuthStore((s) => s.user);
@@ -109,22 +120,36 @@ export function Sidebar() {
         animate={{ x: sidebarOpen ? 0 : -260, opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen w-[260px] border-r bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80",
+          "fixed left-0 top-0 z-40 h-screen w-[260px] border-r border-gray-100 bg-white",
           "hidden lg:flex flex-col pt-14"
         )}
       >
         <div className="flex h-full w-full flex-col">
-          <div className="flex items-center gap-2 border-b px-4 py-2">
-            <Link href={nav[0]?.href ?? "/"} className="font-semibold gradient-text text-lg">
+          <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3 bg-white">
+            <Link href={nav[0]?.href ?? "/"} className="font-bold text-green-600 text-lg">
               N-Mart
             </Link>
-            <span className="text-xs text-muted-foreground ml-1">({user?.role})</span>
+            <span className="text-xs text-gray-500 ml-2">({user?.role})</span>
+            <div className="ml-auto hidden lg:block">
+              <LanguageSwitcher />
+            </div>
           </div>
           <ScrollArea className="flex-1 py-4">
-            <nav className="grid gap-1 px-3">
+            <nav className="grid gap-1 px-3 space-y-1">
               {nav.map((item, i) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                 const Icon = item.icon;
+                let labelText = item.label;
+                if (pathname.startsWith("/user") && item.href.startsWith("/user")) {
+                  if (item.href.endsWith("/orders")) labelText = t ? t("sidebar.orders") : "My Orders";
+                  else if (item.href.endsWith("/profile")) labelText = t ? t("sidebar.profile") : "Profile";
+                  else if (item.href.endsWith("/coupons")) labelText = t ? t("sidebar.coupons") : "Coupons";
+                  else if (item.href.endsWith("/support")) labelText = t ? t("sidebar.support") : "Customer Support";
+                  else if (item.href.endsWith("/faq")) labelText = t ? t("sidebar.faq") : "FAQ";
+                  else if (item.href.endsWith("/terms")) labelText = t ? t("sidebar.terms") : "Terms & Policies";
+                  else if (item.href.endsWith("/home")) labelText = t ? t("sidebar.home") : "Home";
+                }
+
                 return (
                   <Link key={item.href} href={item.href}>
                     <motion.span
@@ -132,30 +157,31 @@ export function Sidebar() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:translate-x-1",
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                         isActive
-                          ? "bg-primary/15 text-primary shadow-sm"
-                          : "text-muted-foreground hover:bg-accent/50"
+                          ? "bg-green-50 text-green-600 shadow-sm"
+                          : "text-gray-600 hover:bg-gray-50"
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
-                      <span>{item.label}</span>
+                      <span>{labelText}</span>
                     </motion.span>
                   </Link>
                 );
               })}
             </nav>
           </ScrollArea>
-          <Separator />
-          <div className="flex items-center justify-between p-4">
+          <div className="border-t border-gray-100 flex items-center justify-between p-4 bg-gray-50">
             <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs hover:text-destructive"
-              onClick={() => logout()}
+              className="text-xs text-gray-600 hover:text-red-600 hover:bg-red-50"
+              onClick={() => {
+                logout();
+              }}
             >
-              Logout
+              {t ? t("sidebar.logout") : "Logout"}
             </Button>
           </div>
         </div>
@@ -182,26 +208,29 @@ export function Sidebar() {
         animate={{ x: sidebarOpen ? 0 : -280 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen w-[260px] border-r bg-card/98 backdrop-blur lg:hidden",
+          "fixed left-0 top-0 z-40 h-screen w-[260px] border-r border-gray-100 bg-white lg:hidden",
           !sidebarOpen && "pointer-events-none"
         )}
       >
         <div className="flex h-full flex-col pt-14">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <Link href={nav[0]?.href ?? "/"} className="font-semibold gradient-text text-lg">
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 bg-white">
+            <Link href={nav[0]?.href ?? "/"} className="font-bold text-green-600 text-lg">
               N-Mart
             </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(false)}
-              className="h-8 w-8 hover:bg-accent"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(false)}
+                className="h-8 w-8 hover:bg-gray-100"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
           <ScrollArea className="flex-1 py-4">
-            <nav className="grid gap-1 px-3">
+            <nav className="grid gap-1 px-3 space-y-1">
               {nav.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                 const Icon = item.icon;
@@ -216,8 +245,8 @@ export function Sidebar() {
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                         isActive
-                          ? "bg-primary/15 text-primary shadow-sm"
-                          : "text-muted-foreground hover:bg-accent/50"
+                          ? "bg-green-50 text-green-600 shadow-sm"
+                          : "text-gray-600 hover:bg-gray-50"
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
@@ -228,13 +257,12 @@ export function Sidebar() {
               })}
             </nav>
           </ScrollArea>
-          <Separator />
-          <div className="flex items-center justify-between p-4">
+          <div className="border-t border-gray-100 flex items-center justify-between p-4 bg-gray-50">
             <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs hover:text-destructive"
+              className="text-xs text-gray-600 hover:text-red-600 hover:bg-red-50"
               onClick={() => {
                 logout();
                 setSidebarOpen(false);
