@@ -2,24 +2,26 @@
 
 import { motion } from "framer-motion";
 import { Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_USERS } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function AdminUsersPage() {
+  const t = useTranslations();
   const users = [{ id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210" }, ...MOCK_USERS];
 
   return (
     <div className="w-full flex flex-col gap-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-6 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold">Users</h1>
-          <p className="text-muted-foreground">Registered customers</p>
+          <h1 className="text-2xl font-bold">{t("adminUsers.title")}</h1>
+          <p className="text-muted-foreground">{t("adminUsers.subtitle")}</p>
         </div>
         <Card className="glass-card border-white/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" /> All Users
+              <Users className="h-5 w-5" /> {t("adminUsers.allUsers")}
             </CardTitle>
           </CardHeader>
           <CardContent>

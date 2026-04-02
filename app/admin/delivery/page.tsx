@@ -2,17 +2,20 @@
 
 import { motion } from "framer-motion";
 import { Truck } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_DELIVERY_BOYS } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function AdminDeliveryPage() {
+  const t = useTranslations();
+
   return (
     <div className="w-full flex flex-col gap-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-6 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold">Delivery Boys</h1>
-          <p className="text-muted-foreground">Manage delivery personnel</p>
+          <h1 className="text-2xl font-bold">{t("adminDelivery.title")}</h1>
+          <p className="text-muted-foreground">{t("adminDelivery.subtitle")}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 min-w-0">
           {MOCK_DELIVERY_BOYS.map((d, i) => (
@@ -31,11 +34,11 @@ export default function AdminDeliveryPage() {
                 <CardContent>
                   <div className="flex gap-6 text-sm">
                     <div>
-                      <p className="text-muted-foreground">Active orders</p>
+                      <p className="text-muted-foreground">{t("adminDelivery.activeOrders")}</p>
                       <p className="font-semibold">{d.activeOrders}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Total deliveries</p>
+                      <p className="text-muted-foreground">{t("adminDelivery.totalDeliveries")}</p>
                       <p className="font-semibold">{d.totalDeliveries}</p>
                     </div>
                   </div>

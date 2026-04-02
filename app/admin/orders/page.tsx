@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_ORDERS } from "@/lib/mock-data";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -25,6 +26,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminOrdersPage() {
+  const t = useTranslations();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const orders = MOCK_ORDERS.filter((o) => {
@@ -37,26 +39,26 @@ export default function AdminOrdersPage() {
     <div className="w-full flex flex-col gap-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-6 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold">Orders</h1>
-          <p className="text-muted-foreground">Manage all orders</p>
+          <h1 className="text-2xl font-bold">{t("adminOrders.title")}</h1>
+          <p className="text-muted-foreground">{t("adminOrders.subtitle")}</p>
         </div>
         <Card className="glass-card border-white/20">
           <CardHeader className="pb-4">
             <div className="flex flex-col gap-4 sm:flex-row">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search by order ID or customer..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+                <Input placeholder={t("adminOrders.searchPlaceholder")} className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder={t("adminOrders.status")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="accepted">Accepted</SelectItem>
-                  <SelectItem value="out_for_delivery">Out for delivery</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="all">{t("adminOrders.allStatuses")}</SelectItem>
+                  <SelectItem value="pending">{t("adminOrders.pending")}</SelectItem>
+                  <SelectItem value="accepted">{t("adminOrders.accepted")}</SelectItem>
+                  <SelectItem value="out_for_delivery">{t("adminOrders.outForDelivery")}</SelectItem>
+                  <SelectItem value="delivered">{t("adminOrders.delivered")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -66,11 +68,11 @@ export default function AdminOrdersPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="text-left p-4 font-medium">Order ID</th>
-                    <th className="text-left p-4 font-medium">Customer</th>
-                    <th className="text-left p-4 font-medium">Total</th>
-                    <th className="text-left p-4 font-medium">Status</th>
-                    <th className="text-left p-4 font-medium">Date</th>
+                    <th className="text-left p-4 font-medium">{t("adminOrders.orderId")}</th>
+                    <th className="text-left p-4 font-medium">{t("adminOrders.customer")}</th>
+                    <th className="text-left p-4 font-medium">{t("adminOrders.total")}</th>
+                    <th className="text-left p-4 font-medium">{t("adminOrders.status")}</th>
+                    <th className="text-left p-4 font-medium">{t("adminOrders.date")}</th>
                   </tr>
                 </thead>
                 <tbody>

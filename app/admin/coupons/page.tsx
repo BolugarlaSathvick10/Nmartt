@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Trash2, Plus, Edit, Power, Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +60,7 @@ const MOCK_COUPONS: Coupon[] = [
 ];
 
 export default function CouponsPage() {
+  const t = useTranslations();
   const [coupons, setCoupons] = useState<Coupon[]>(MOCK_COUPONS);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
@@ -90,7 +92,7 @@ export default function CouponsPage() {
 
   const handleSave = () => {
     if (!formData.code || !formData.expiryDate) {
-      alert("Please fill all fields");
+      alert(t("adminCoupons.fillAllFields"));
       return;
     }
 
@@ -118,7 +120,7 @@ export default function CouponsPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Delete this coupon?")) {
+    if (confirm(t("adminCoupons.deleteConfirm"))) {
       setCoupons((prev) => prev.filter((c) => c.id !== id));
     }
   };
@@ -137,17 +139,17 @@ export default function CouponsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
-              Coupons & Offers
+              {t("adminCoupons.title")}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              Manage promotional codes and discounts
+              {t("adminCoupons.subtitle")}
             </p>
           </div>
           <Button
             onClick={handleOpenAdd}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
-            <Plus className="mr-2 h-4 w-4" /> New Coupon
+            <Plus className="mr-2 h-4 w-4" /> {t("adminCoupons.newCoupon")}
           </Button>
         </div>
 
@@ -156,13 +158,13 @@ export default function CouponsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b bg-gray-50">
-                  <th className="text-left p-4 font-medium text-gray-900">Code</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Discount</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Min Order</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Expiry</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Usage</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Status</th>
-                  <th className="text-right p-4 font-medium text-gray-900">Actions</th>
+                  <th className="text-left p-4 font-medium text-gray-900">{t("adminCoupons.code")}</th>
+                  <th className="text-left p-4 font-medium text-gray-900">{t("adminCoupons.discount")}</th>
+                  <th className="text-left p-4 font-medium text-gray-900">{t("adminCoupons.minOrder")}</th>
+                  <th className="text-left p-4 font-medium text-gray-900">{t("adminCoupons.expiry")}</th>
+                  <th className="text-left p-4 font-medium text-gray-900">{t("adminCoupons.usage")}</th>
+                  <th className="text-left p-4 font-medium text-gray-900">{t("adminCoupons.status")}</th>
+                  <th className="text-right p-4 font-medium text-gray-900">{t("adminCoupons.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,11 +207,11 @@ export default function CouponsPage() {
                       >
                         {coupon.active ? (
                           <>
-                            <Eye className="h-3 w-3" /> Active
+                            <Eye className="h-3 w-3" /> {t("adminCoupons.active")}
                           </>
                         ) : (
                           <>
-                            <EyeOff className="h-3 w-3" /> Inactive
+                            <EyeOff className="h-3 w-3" /> {t("adminCoupons.inactive")}
                           </>
                         )}
                       </div>
@@ -220,7 +222,7 @@ export default function CouponsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleToggle(coupon.id)}
-                          title={coupon.active ? "Deactivate" : "Activate"}
+                          title={coupon.active ? t("adminCoupons.deactivate") : t("adminCoupons.activate")}
                           className="h-8 w-8 p-0 hover:bg-gray-100"
                         >
                           <Power className="h-4 w-4 text-gray-600" />
@@ -255,15 +257,15 @@ export default function CouponsPage() {
         <DialogContent className="bg-white rounded-xl border border-gray-200">
           <DialogHeader>
             <DialogTitle className="text-gray-900">
-              {editingCoupon ? "Edit Coupon" : "Create New Coupon"}
+              {editingCoupon ? t("adminCoupons.editCoupon") : t("adminCoupons.createNewCoupon")}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div>
-              <Label className="text-sm font-medium text-gray-900">Coupon Code</Label>
+              <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.couponCode")}</Label>
               <Input
-                placeholder="e.g., SAVE10"
+                placeholder={t("adminCoupons.couponCodePlaceholder")}
                 value={formData.code || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))
@@ -274,7 +276,7 @@ export default function CouponsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium text-gray-900">Discount %</Label>
+                <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.discountPercent")}</Label>
                 <Input
                   type="number"
                   placeholder="10"
@@ -290,7 +292,7 @@ export default function CouponsPage() {
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-gray-900">Min Order (₹)</Label>
+                <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.minOrderInr")}</Label>
                 <Input
                   type="number"
                   placeholder="500"
@@ -307,7 +309,7 @@ export default function CouponsPage() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-gray-900">Expiry Date</Label>
+              <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.expiryDate")}</Label>
               <Input
                 type="date"
                 value={formData.expiryDate || ""}
@@ -328,7 +330,7 @@ export default function CouponsPage() {
                 className="rounded border-gray-200"
               />
               <label className="text-sm text-gray-700">
-                {formData.active ? "Active" : "Inactive"}
+                {formData.active ? t("adminCoupons.active") : t("adminCoupons.inactive")}
               </label>
             </div>
           </div>
@@ -339,13 +341,13 @@ export default function CouponsPage() {
               onClick={() => setModalOpen(false)}
               className="border border-gray-200"
             >
-              Cancel
+              {t("adminCoupons.cancel")}
             </Button>
             <Button
               onClick={handleSave}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              {editingCoupon ? "Update" : "Create"}
+              {editingCoupon ? t("adminCoupons.update") : t("adminCoupons.create")}
             </Button>
           </DialogFooter>
         </DialogContent>

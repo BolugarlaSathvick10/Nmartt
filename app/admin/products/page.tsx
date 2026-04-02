@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Search, Plus, Pencil } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_CATEGORIES, MOCK_PRODUCTS } from "@/lib/mock-data";
 import type { Product } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const productList = [...MOCK_PRODUCTS];
 type ProductForm = Product & { upcoming?: boolean };
 
 export default function AdminProductsPage() {
+  const t = useTranslations();
   const [products, setProducts] = useState(productList);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -105,10 +107,10 @@ export default function AdminProductsPage() {
   };
 
   const getStockBadge = (p: Product) => {
-    if (p.upcoming) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">Upcoming</span>;
-    if (p.stock === 0) return <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs text-destructive">Out of stock</span>;
-    if (p.stock <= 5) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">Low</span>;
-    return <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">In stock</span>;
+    if (p.upcoming) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">{t("adminProducts.upcoming")}</span>;
+    if (p.stock === 0) return <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs text-destructive">{t("adminProducts.outOfStock")}</span>;
+    if (p.stock <= 5) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">{t("adminProducts.low")}</span>;
+    return <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">{t("adminProducts.inStock")}</span>;
   };
 
   return (
@@ -116,11 +118,11 @@ export default function AdminProductsPage() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-6 min-w-0">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Products</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage your product catalog</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">{t("adminProducts.title")}</h1>
+            <p className="text-sm text-gray-500 mt-1">{t("adminProducts.subtitle")}</p>
           </div>
           <Button onClick={openAdd} className="bg-green-600 hover:bg-green-700 text-white">
-            <Plus className="mr-2 h-4 w-4" /> Add Product
+            <Plus className="mr-2 h-4 w-4" /> {t("adminProducts.addProduct")}
           </Button>
         </div>
 
@@ -128,7 +130,7 @@ export default function AdminProductsPage() {
           <div className="relative flex-1 min-w-[200px] w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search products..."
+              placeholder={t("adminProducts.searchProducts")}
               className="pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 w-full"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -137,10 +139,10 @@ export default function AdminProductsPage() {
 
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="w-full md:w-[200px] border border-gray-200 rounded-lg px-3 py-2 bg-white">
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder={t("adminProducts.category")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">{t("adminProducts.allCategories")}</SelectItem>
               {MOCK_CATEGORIES.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
@@ -149,11 +151,11 @@ export default function AdminProductsPage() {
 
           <Select value={upcomingFilter} onValueChange={(value) => setUpcomingFilter(value as "all" | "upcoming")}>
             <SelectTrigger className="w-full md:w-[160px] border border-gray-200 rounded-lg px-3 py-2 bg-white">
-              <SelectValue placeholder="Type" />
+              <SelectValue placeholder={t("adminProducts.type")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All products</SelectItem>
-              <SelectItem value="upcoming">Upcoming only</SelectItem>
+              <SelectItem value="all">{t("adminProducts.allProducts")}</SelectItem>
+              <SelectItem value="upcoming">{t("adminProducts.upcomingOnly")}</SelectItem>
             </SelectContent>
           </Select>
         </Card>
@@ -164,11 +166,11 @@ export default function AdminProductsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b bg-gray-50">
-                    <th className="text-left p-4 font-medium text-gray-900">Product</th>
-                    <th className="text-left p-4 font-medium text-gray-900">Category</th>
-                    <th className="text-left p-4 font-medium text-gray-900">Price</th>
-                    <th className="text-left p-4 font-medium text-gray-900">Stock</th>
-                    <th className="text-right p-4 font-medium text-gray-900">Actions</th>
+                    <th className="text-left p-4 font-medium text-gray-900">{t("adminProducts.product")}</th>
+                    <th className="text-left p-4 font-medium text-gray-900">{t("adminProducts.category")}</th>
+                    <th className="text-left p-4 font-medium text-gray-900">{t("adminProducts.price")}</th>
+                    <th className="text-left p-4 font-medium text-gray-900">{t("adminProducts.stock")}</th>
+                    <th className="text-right p-4 font-medium text-gray-900">{t("adminProducts.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -212,29 +214,29 @@ export default function AdminProductsPage() {
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="w-full">
           <DialogHeader>
-            <DialogTitle>{editingProduct ? "Edit Product" : "Add Product"}</DialogTitle>
+            <DialogTitle>{editingProduct ? t("adminProducts.editProduct") : t("adminProducts.addProduct")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(saveProduct)} className="space-y-4">
             <div>
-              <Label>Name</Label>
+              <Label>{t("adminProducts.name")}</Label>
               <Input {...form.register("name", { required: true })} className="mt-1" />
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{t("adminProducts.description")}</Label>
               <Input {...form.register("description")} className="mt-1" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Price (₹)</Label>
+                <Label>{t("adminProducts.priceInr")}</Label>
                 <Input type="number" {...form.register("price", { valueAsNumber: true })} className="mt-1" />
               </div>
               <div>
-                <Label>Stock</Label>
+                <Label>{t("adminProducts.stock")}</Label>
                 <Input type="number" {...form.register("stock", { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
             <div>
-              <Label>Category</Label>
+              <Label>{t("adminProducts.category")}</Label>
               <Select
                 value={form.watch("categoryId")}
                 onValueChange={(value) => {
@@ -254,7 +256,7 @@ export default function AdminProductsPage() {
               </Select>
             </div>
             <div>
-              <Label>Image URL (preview only)</Label>
+              <Label>{t("adminProducts.imageUrlPreview")}</Label>
               <Input {...form.register("image")} className="mt-1" />
               {form.watch("image") && (
                 <div className="mt-2 h-24 w-24 rounded-lg border overflow-hidden bg-muted">
@@ -264,11 +266,11 @@ export default function AdminProductsPage() {
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="upcoming" {...form.register("upcoming")} className="rounded border" />
-              <Label htmlFor="upcoming">Upcoming product (users can show interest / Notify me)</Label>
+              <Label htmlFor="upcoming">{t("adminProducts.upcomingProductNotify")}</Label>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-              <Button type="submit">Save</Button>
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>{t("adminProducts.cancel")}</Button>
+              <Button type="submit">{t("adminProducts.save")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

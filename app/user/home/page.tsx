@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingCart } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_CATEGORIES, MOCK_PRODUCTS } from "@/lib/mock-data";
 import { useCartStore, useUpcomingStore, useUIStore } from "@/store";
 import { Button } from "@/components/ui/button";
@@ -15,13 +16,13 @@ const upcomingProducts = MOCK_PRODUCTS.filter((p) => p.upcoming);
 const regularProducts = MOCK_PRODUCTS.filter((p) => !p.upcoming);
 
 export default function UserHomePage() {
+  const t = useTranslations();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const addItem = useCartStore((s) => s.addItem);
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
-  const totalItems = useCartStore((s) => s.totalItems);
   
   const cartOpen = useUIStore((s) => s.cartOpen);
   const setCartOpen = useUIStore((s) => s.setCartOpen);
@@ -63,7 +64,7 @@ export default function UserHomePage() {
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search for products..."
+                placeholder={t("home.searchPlaceholder")}
                 className="w-full rounded-lg border border-gray-200 px-4 py-3 pl-10 outline-none focus:border-transparent focus:ring-2 focus:ring-green-500"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -74,7 +75,7 @@ export default function UserHomePage() {
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
             >
-              <option value="all">All categories</option>
+              <option value="all">{t("home.allCategories")}</option>
               {MOCK_CATEGORIES.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -95,8 +96,8 @@ export default function UserHomePage() {
           >
             <div className="flex items-center gap-2">
               <span className="h-1 w-1 rounded-full bg-primary" />
-              <h2 className="text-xl font-bold text-foreground">Search Results</h2>
-              <span className="text-sm text-muted-foreground">({filtered.length} products found)</span>
+              <h2 className="text-xl font-bold text-foreground">{t("home.searchResults")}</h2>
+              <span className="text-sm text-muted-foreground">{t("home.productsFound", { count: filtered.length })}</span>
             </div>
 
             {filtered.length > 0 ? (
@@ -117,7 +118,7 @@ export default function UserHomePage() {
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
                   <Search className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <p className="text-muted-foreground">No products found matching your search</p>
+                <p className="text-muted-foreground">{t("home.noSearchProducts")}</p>
               </motion.div>
             )}
           </motion.section>
@@ -131,8 +132,8 @@ export default function UserHomePage() {
             isInterested={hasInterest}
             onNotifyMe={(id: string) => (hasInterest(id) ? removeInterest(id) : addInterest(id))}
             interestCount={getCount}
-            title="Upcoming Products"
-            description="Show interest to get notified when these are available"
+            title={t("home.upcomingTitle")}
+            description={t("home.upcomingDescription")}
           />
         )}
       </AnimatePresence>
@@ -143,7 +144,7 @@ export default function UserHomePage() {
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <span className="h-1 w-1 rounded-full bg-primary" />
-                Categories
+                {t("home.categories")}
               </h2>
               <div className="overflow-x-auto pb-2">
                 <div className="flex gap-2 min-w-max">
@@ -154,7 +155,7 @@ export default function UserHomePage() {
                       onClick={() => setCategoryFilter("all")}
                       className="rounded-full"
                     >
-                      All
+                      {t("home.all")}
                     </Button>
                   </motion.div>
                   {MOCK_CATEGORIES.map((c) => (
@@ -176,7 +177,7 @@ export default function UserHomePage() {
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <span className="h-1 w-1 rounded-full bg-primary" />
-                {categoryFilter === "all" ? "All Products" : MOCK_CATEGORIES.find((c) => c.id === categoryFilter)?.name}
+                {categoryFilter === "all" ? t("home.allProducts") : MOCK_CATEGORIES.find((c) => c.id === categoryFilter)?.name}
               </h2>
 
               {filtered.length > 0 ? (
@@ -197,7 +198,7 @@ export default function UserHomePage() {
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
                     <ShoppingCart className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <p className="text-muted-foreground">No products in this category</p>
+                  <p className="text-muted-foreground">{t("home.noCategoryProducts")}</p>
                 </motion.div>
               )}
             </div>

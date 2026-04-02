@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { History, MapPin } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_ORDERS } from "@/lib/mock-data";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,16 +10,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const delivered = MOCK_ORDERS.filter((o) => o.status === "delivered");
 
 export default function DeliveryHistoryPage() {
+  const t = useTranslations();
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Delivery History</h1>
-        <p className="text-muted-foreground">Past delivered orders</p>
+        <h1 className="text-2xl font-bold">{t("deliveryHistory.title")}</h1>
+        <p className="text-muted-foreground">{t("deliveryHistory.subtitle")}</p>
       </div>
       <Card className="glass-card border-white/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" /> Delivered orders
+            <History className="h-5 w-5" /> {t("deliveryHistory.deliveredOrders")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -44,10 +47,10 @@ export default function DeliveryHistoryPage() {
                     {o.deliveredAt && <p className="text-xs text-muted-foreground">{formatDate(o.deliveredAt)}</p>}
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{o.items.length} items</p>
+                <p className="text-sm text-muted-foreground">{t("deliveryHistory.itemsCount", { count: o.items.length })}</p>
               </motion.div>
             ))}
-            {delivered.length === 0 && <p className="text-muted-foreground text-center py-8">No delivery history yet.</p>}
+            {delivered.length === 0 && <p className="text-muted-foreground text-center py-8">{t("deliveryHistory.noHistory")}</p>}
           </div>
         </CardContent>
       </Card>

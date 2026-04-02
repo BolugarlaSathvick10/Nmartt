@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ShoppingCart, Package, Truck, CheckCircle, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_ORDERS } from "@/lib/mock-data";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,23 +17,24 @@ import {
 } from "@/components/ui/dialog";
 import { OrderTrackingMapClient } from "@/components/order-tracking-map-client";
 
-const statusSteps = [
-  { key: "pending", label: "Order placed", icon: Package },
-  { key: "accepted", label: "Accepted", icon: Truck },
-  { key: "out_for_delivery", label: "Out for delivery", icon: Truck },
-  { key: "delivered", label: "Delivered", icon: CheckCircle },
-];
-
 export default function UserOrdersPage() {
+  const t = useTranslations();
   const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
   const myOrders = MOCK_ORDERS.filter((o) => o.userId === "u1" || o.userName === "John Doe");
   const trackingOrder = trackingOrderId ? myOrders.find((o) => o.id === trackingOrderId) : null;
 
+  const statusSteps = [
+    { key: "pending", label: t("orders.orderPlaced"), icon: Package },
+    { key: "accepted", label: t("orders.accepted"), icon: Truck },
+    { key: "out_for_delivery", label: t("orders.outForDelivery"), icon: Truck },
+    { key: "delivered", label: t("orders.delivered"), icon: CheckCircle },
+  ];
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">My Orders</h1>
-        <p className="text-muted-foreground">View and track orders</p>
+        <h1 className="text-2xl font-bold">{t("orders.title")}</h1>
+        <p className="text-muted-foreground">{t("orders.subtitle")}</p>
       </div>
       <div className="space-y-4">
         {myOrders.map((o, i) => (
@@ -42,15 +44,15 @@ export default function UserOrdersPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-mono text-sm text-muted-foreground">{o.id}</p>
-                    <p className="font-semibold">{formatPrice(o.total)} · {o.items.length} items</p>
+                    <p className="font-semibold">{formatPrice(o.total)} · {t("orders.itemsCount", { count: o.items.length })}</p>
                     <p className="text-sm text-muted-foreground">{formatDate(o.createdAt)}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => setTrackingOrderId(o.id)}>
-                      Track
+                      {t("orders.track")}
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/user/orders?view=${o.id}`}>Details</Link>
+                      <Link href={`/user/orders?view=${o.id}`}>{t("orders.details")}</Link>
                     </Button>
                   </div>
                 </div>
@@ -62,9 +64,9 @@ export default function UserOrdersPage() {
           <Card className="glass-card border-white/20">
             <CardContent className="py-12 text-center text-muted-foreground">
               <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No orders yet.</p>
+              <p>{t("orders.noOrders")}</p>
               <Button asChild className="mt-4">
-                <Link href="/user/home">Shop now</Link>
+                <Link href="/user/home">{t("orders.shopNow")}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -75,7 +77,7 @@ export default function UserOrdersPage() {
         <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
           <DialogHeader className="p-4 pb-0">
             <DialogTitle className="flex items-center justify-between">
-              <span>Track order {trackingOrderId}</span>
+              <span>{t("orders.trackOrder", { id: trackingOrderId })}</span>
               <Button variant="ghost" size="icon" onClick={() => setTrackingOrderId(null)}>
                 <X className="h-4 w-4" />
               </Button>
@@ -92,7 +94,7 @@ export default function UserOrdersPage() {
                 />
               </div>
               <div className="p-4 border-t">
-                <OrderTimeline status={trackingOrder.status} />
+                <OrderTimeline status={trackingOrder.status} statusSteps={statusSteps} statusTitle={t("orders.status")} />
               </div>
             </>
           )}
@@ -102,13 +104,21 @@ export default function UserOrdersPage() {
   );
 }
 
-function OrderTimeline({ status }: { status: string }) {
+function OrderTimeline({
+  status,
+  statusSteps,
+  statusTitle,
+}: {
+  status: string;
+  statusSteps: Array<{ key: string; label: string; icon: ({ className }: { className?: string }) => JSX.Element }>;
+  statusTitle: string;
+}) {
   const currentIndex = statusSteps.findIndex((s) => s.key === status);
   const activeIndex = currentIndex >= 0 ? currentIndex : 0;
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-muted-foreground mb-2">Status</p>
+      <p className="text-sm font-medium text-muted-foreground mb-2">{statusTitle}</p>
       {statusSteps.map((step, i) => {
         const isActive = i <= activeIndex;
         const Icon = step.icon;

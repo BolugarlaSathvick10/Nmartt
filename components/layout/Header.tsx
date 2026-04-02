@@ -28,7 +28,8 @@ export function Header({ className }: HeaderProps) {
       className={cn(
         "fixed top-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70 transition-all duration-500 ease-in-out",
         HEADER_HEIGHT_CLASS,
-        "w-full"
+        "w-full",
+        className
       )}
     >
       <div className="flex h-full w-full items-center justify-between px-6">

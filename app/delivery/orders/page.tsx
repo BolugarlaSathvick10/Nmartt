@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Check, X, Truck } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_ORDERS } from "@/lib/mock-data";
 import { formatPrice } from "@/lib/utils";
 import type { Order, OrderStatus } from "@/types";
@@ -20,6 +21,7 @@ import { getMockUserLocation } from "@/lib/locations";
 const statusFlow: OrderStatus[] = ["accepted", "out_for_delivery", "delivered"];
 
 export default function DeliveryOrdersPage() {
+  const t = useTranslations();
   const [orders, setOrders] = useState(
     MOCK_ORDERS.filter((o) => o.deliveryBoyName && o.status !== "cancelled" && o.status !== "rejected")
   );
@@ -47,8 +49,8 @@ export default function DeliveryOrdersPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Assigned Orders</h1>
-        <p className="text-muted-foreground">Accept, reject, and update delivery status</p>
+        <h1 className="text-2xl font-bold">{t("deliveryOrders.title")}</h1>
+        <p className="text-muted-foreground">{t("deliveryOrders.subtitle")}</p>
       </div>
       <div className="space-y-4">
         <AnimatePresence>
@@ -69,27 +71,27 @@ export default function DeliveryOrdersPage() {
                       <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                         <MapPin className="h-3 w-3" /> {o.userAddress}
                       </p>
-                      <p className="text-sm font-medium mt-2">{formatPrice(o.total)} · {o.items.length} items</p>
+                      <p className="text-sm font-medium mt-2">{formatPrice(o.total)} · {t("deliveryOrders.itemsCount", { count: o.items.length })}</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{o.status.replace(/_/g, " ")}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t(`orderStatus.${o.status}`)}</span>
                       {o.status === "pending" && (
                         <>
                           <Button size="sm" onClick={() => acceptOrder(o.id)}>
-                            <Check className="mr-1 h-4 w-4" /> Accept
+                            <Check className="mr-1 h-4 w-4" /> {t("deliveryOrders.accept")}
                           </Button>
                           <Button size="sm" variant="destructive" onClick={() => rejectOrder(o.id)}>
-                            <X className="mr-1 h-4 w-4" /> Reject
+                            <X className="mr-1 h-4 w-4" /> {t("deliveryOrders.reject")}
                           </Button>
                         </>
                       )}
                       {o.status !== "pending" && o.status !== "delivered" && nextStatus(o.status) && (
                         <Button size="sm" onClick={() => updateStatus(o.id, nextStatus(o.status)!)}>
-                          <Truck className="mr-1 h-4 w-4" /> {o.status === "accepted" ? "Out for delivery" : "Mark delivered"}
+                          <Truck className="mr-1 h-4 w-4" /> {o.status === "accepted" ? t("deliveryOrders.outForDelivery") : t("deliveryOrders.markDelivered")}
                         </Button>
                       )}
                       <Button variant="outline" size="sm" onClick={() => { setSelectedOrder(o); setDetailOpen(true); }}>
-                        Details
+                        {t("deliveryOrders.details")}
                       </Button>
                     </div>
                   </div>
@@ -103,17 +105,17 @@ export default function DeliveryOrdersPage() {
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Order {selectedOrder?.id}</DialogTitle>
+            <DialogTitle>{t("deliveryOrders.order", { id: selectedOrder?.id })}</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium">Customer</p>
+                <p className="text-sm font-medium">{t("deliveryOrders.customer")}</p>
                 <p>{selectedOrder.userName} · {selectedOrder.userMobile}</p>
                 <p className="text-sm text-muted-foreground mt-1">{selectedOrder.userAddress}</p>
               </div>
               <div>
-                <p className="text-sm font-medium">Items</p>
+                <p className="text-sm font-medium">{t("deliveryOrders.items")}</p>
                 <ul className="mt-1 space-y-1">
                   {selectedOrder.items.map((item) => (
                     <li key={item.productId} className="flex justify-between text-sm">
@@ -122,10 +124,10 @@ export default function DeliveryOrdersPage() {
                     </li>
                   ))}
                 </ul>
-                <p className="font-semibold mt-2">Total: {formatPrice(selectedOrder.total)}</p>
+                <p className="font-semibold mt-2">{t("deliveryOrders.total")} {formatPrice(selectedOrder.total)}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium">Route: Shop → Delivery</p>
+                <p className="text-sm font-medium">{t("deliveryOrders.route")}</p>
                 <DeliveryMapClient
                   userLocation={getMockUserLocation(selectedOrder.userAddress)}
                   showRoute={true}

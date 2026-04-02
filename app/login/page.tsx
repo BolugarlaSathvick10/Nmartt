@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Phone, User, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ type OTPForm = { mobile: string; otp: string };
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations();
   const login = useAuthStore((s) => s.login);
   const signup = useAuthStore((s) => s.signup);
 
@@ -34,6 +36,13 @@ export default function LoginPage() {
   const [signupOtpSent, setSignupOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const translateAuthError = (message?: string) => {
+    if (!message) return "";
+    if (message === "Invalid email or password") return t("auth.invalidEmailOrPassword");
+    if (message === "Email already registered") return t("auth.emailAlreadyRegistered");
+    return message;
+  };
 
   const loginForm = useForm<LoginForm>({ defaultValues: { email: "", password: "" } });
   const signupForm = useForm<SignupForm>({ defaultValues: { name: "", email: "", password: "", mobile: "", otp: "" } });
@@ -48,7 +57,7 @@ export default function LoginPage() {
     if (result.success && result.redirect) {
       router.push(result.redirect);
     } else {
-      setError(result.error || "Login failed");
+      setError(translateAuthError(result.error) || t("auth.loginFailed"));
     }
   };
 
@@ -64,7 +73,7 @@ export default function LoginPage() {
     const result = login("user@nmart.com", "user123");
     setLoading(false);
     if (result.success && result.redirect) router.push(result.redirect);
-    else setError("Invalid OTP");
+    else setError(t("auth.invalidOtp"));
   };
 
   const onSignup = async (data: SignupForm) => {
@@ -80,7 +89,7 @@ export default function LoginPage() {
     if (result.success) {
       router.push("/user/home");
     } else {
-      setError(result.error || "Signup failed");
+      setError(translateAuthError(result.error) || t("auth.signupFailed"));
     }
   };
 
@@ -101,13 +110,13 @@ export default function LoginPage() {
             >
               N-Mart
             </motion.h1>
-            <CardDescription>Grocery delivery at your doorstep</CardDescription>
+            <CardDescription>{t("auth.tagline")}</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted/50">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="login">{t("auth.login")}</TabsTrigger>
+                <TabsTrigger value="signup">{t("auth.signUp")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login" className="space-y-4 mt-0">
@@ -119,7 +128,7 @@ export default function LoginPage() {
                       loginMethod === "email" ? "bg-background shadow" : ""
                     }`}
                   >
-                    Email
+                    {t("auth.email")}
                   </button>
                   <button
                     type="button"
@@ -128,7 +137,7 @@ export default function LoginPage() {
                       loginMethod === "otp" ? "bg-background shadow" : ""
                     }`}
                   >
-                    Mobile + OTP
+                    {t("auth.mobileOtp")}
                   </button>
                 </div>
 
@@ -143,7 +152,7 @@ export default function LoginPage() {
                       className="space-y-4"
                     >
                       <div>
-                        <Label htmlFor="login-email">Email</Label>
+                        <Label htmlFor="login-email">{t("auth.email")}</Label>
                         <div className="relative mt-1">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
@@ -156,13 +165,13 @@ export default function LoginPage() {
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor="login-password">Password</Label>
+                        <Label htmlFor="login-password">{t("auth.password")}</Label>
                         <div className="relative mt-1">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             id="login-password"
                             type="password"
-                            placeholder="••••••••"
+                            placeholder={t("auth.passwordPlaceholder")}
                             className="pl-10"
                             {...loginForm.register("password", { required: true })}
                           />
@@ -172,12 +181,12 @@ export default function LoginPage() {
                           onClick={() => setForgotOpen(true)}
                           className="text-sm text-primary hover:underline mt-1"
                         >
-                          Forgot password?
+                          {t("auth.forgotPassword")}
                         </button>
                       </div>
                       {error && <p className="text-sm text-destructive">{error}</p>}
                       <Button type="submit" className="w-full bg-gradient-to-r from-primary to-primary/90" disabled={loading}>
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Login"}
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login")}
                       </Button>
                     </motion.form>
                   ) : (
@@ -190,11 +199,11 @@ export default function LoginPage() {
                       className="space-y-4"
                     >
                       <div>
-                        <Label>Mobile</Label>
+                        <Label>{t("auth.mobile")}</Label>
                         <div className="relative mt-1">
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
-                            placeholder="9876543210"
+                            placeholder={t("auth.mobilePlaceholder")}
                             className="pl-10"
                             {...otpForm.register("mobile", { required: true })}
                             disabled={otpSent}
@@ -203,13 +212,13 @@ export default function LoginPage() {
                       </div>
                       {otpSent && (
                         <div>
-                          <Label>OTP</Label>
-                          <Input placeholder="Enter 6-digit OTP" {...otpForm.register("otp", { required: true })} />
+                          <Label>{t("auth.otp")}</Label>
+                          <Input placeholder={t("auth.otpPlaceholder")} {...otpForm.register("otp", { required: true })} />
                         </div>
                       )}
                       {error && <p className="text-sm text-destructive">{error}</p>}
                       <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : otpSent ? "Verify OTP" : "Send OTP"}
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : otpSent ? t("auth.verifyOtp") : t("auth.sendOtp")}
                       </Button>
                     </motion.form>
                   )}
@@ -224,49 +233,49 @@ export default function LoginPage() {
                   className="space-y-4"
                 >
                   <div>
-                    <Label>Name</Label>
+                    <Label>{t("auth.name")}</Label>
                     <div className="relative mt-1">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="Full name" className="pl-10" {...signupForm.register("name", { required: true })} />
+                      <Input placeholder={t("auth.fullName")} className="pl-10" {...signupForm.register("name", { required: true })} />
                     </div>
                   </div>
                   <div>
-                    <Label>Email</Label>
+                    <Label>{t("auth.email")}</Label>
                     <div className="relative mt-1">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input type="email" placeholder="you@example.com" className="pl-10" {...signupForm.register("email", { required: true })} />
+                      <Input type="email" placeholder={t("auth.emailPlaceholder")} className="pl-10" {...signupForm.register("email", { required: true })} />
                     </div>
                   </div>
                   <div>
-                    <Label>Password</Label>
+                    <Label>{t("auth.password")}</Label>
                     <div className="relative mt-1">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input type="password" placeholder="••••••••" className="pl-10" {...signupForm.register("password", { required: true })} />
+                      <Input type="password" placeholder={t("auth.passwordPlaceholder")} className="pl-10" {...signupForm.register("password", { required: true })} />
                     </div>
                   </div>
                   <div>
-                    <Label>Mobile</Label>
+                    <Label>{t("auth.mobile")}</Label>
                     <div className="relative mt-1">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="9876543210" className="pl-10" {...signupForm.register("mobile")} disabled={signupOtpSent} />
+                      <Input placeholder={t("auth.mobilePlaceholder")} className="pl-10" {...signupForm.register("mobile")} disabled={signupOtpSent} />
                     </div>
                   </div>
                   {signupOtpSent && (
                     <div>
-                      <Label>OTP (UI only)</Label>
-                      <Input placeholder="Enter OTP" {...signupForm.register("otp")} />
+                      <Label>{t("auth.otp")} (UI)</Label>
+                      <Input placeholder={t("auth.enterOtp")} {...signupForm.register("otp")} />
                     </div>
                   )}
                   {error && <p className="text-sm text-destructive">{error}</p>}
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : signupOtpSent ? "Create account" : "Send OTP & Continue"}
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : signupOtpSent ? t("auth.createAccount") : t("auth.sendOtpContinue")}
                   </Button>
                 </motion.form>
               </TabsContent>
             </Tabs>
 
             <p className="text-xs text-center text-muted-foreground mt-4">
-              Demo: admin@nmart.com / admin123 · pm@nmart.com / pm123 · delivery@nmart.com / delivery123 · user@nmart.com / user123
+              {t("auth.demoCredentials")}
             </p>
           </CardContent>
         </Card>
@@ -275,15 +284,15 @@ export default function LoginPage() {
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
         <DialogContent showClose={true}>
           <DialogHeader>
-            <DialogTitle>Forgot Password</DialogTitle>
-            <DialogDescription>Enter your email and we&apos;ll send a reset link (UI only — no email sent).</DialogDescription>
+            <DialogTitle>{t("auth.forgotTitle")}</DialogTitle>
+            <DialogDescription>{t("auth.forgotDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label>Email</Label>
-              <Input type="email" placeholder="you@example.com" className="mt-1" />
+              <Label>{t("auth.email")}</Label>
+              <Input type="email" placeholder={t("auth.emailPlaceholder")} className="mt-1" />
             </div>
-            <Button className="w-full">Send reset link</Button>
+            <Button className="w-full">{t("auth.sendResetLink")}</Button>
           </div>
         </DialogContent>
       </Dialog>

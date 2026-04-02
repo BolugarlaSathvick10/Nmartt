@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { User, Mail, Phone, MapPin } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -10,13 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function UserProfilePage() {
+  const t = useTranslations();
   const user = useAuthStore((s) => s.user);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Profile</h1>
-        <p className="text-muted-foreground">Your account details</p>
+        <h1 className="text-2xl font-bold">{t("profile.title")}</h1>
+        <p className="text-muted-foreground">{t("profile.subtitle")}</p>
       </div>
       <Card className="glass-card border-white/20">
         <CardHeader>
@@ -25,7 +27,7 @@ export default function UserProfilePage() {
               <AvatarFallback className="text-xl">{user?.name?.slice(0, 2).toUpperCase() ?? "U"}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle>{user?.name ?? "User"}</CardTitle>
+              <CardTitle>{user?.name ?? t("profile.fallbackUser")}</CardTitle>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
@@ -33,29 +35,29 @@ export default function UserProfilePage() {
         <CardContent className="space-y-4">
           <div>
             <Label className="flex items-center gap-2">
-              <User className="h-4 w-4" /> Name
+              <User className="h-4 w-4" /> {t("profile.name")}
             </Label>
             <Input className="mt-1" defaultValue={user?.name} readOnly />
           </div>
           <div>
             <Label className="flex items-center gap-2">
-              <Mail className="h-4 w-4" /> Email
+              <Mail className="h-4 w-4" /> {t("profile.email")}
             </Label>
             <Input className="mt-1" defaultValue={user?.email} readOnly />
           </div>
           <div>
             <Label className="flex items-center gap-2">
-              <Phone className="h-4 w-4" /> Mobile
+              <Phone className="h-4 w-4" /> {t("profile.mobile")}
             </Label>
             <Input className="mt-1" defaultValue={user?.mobile ?? "—"} readOnly />
           </div>
           <div>
             <Label className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" /> Default address (mock)
+              <MapPin className="h-4 w-4" /> {t("profile.defaultAddress")}
             </Label>
             <Input className="mt-1" defaultValue="123 Main St, Apt 4B, Mumbai 400001" readOnly />
           </div>
-          <Button variant="outline" disabled>Save (mock)</Button>
+          <Button variant="outline" disabled>{t("profile.saveMock")}</Button>
         </CardContent>
       </Card>
     </motion.div>

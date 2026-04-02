@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Search, Plus, Pencil } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mock-data";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
@@ -29,6 +30,7 @@ import {
 const productList = [...MOCK_PRODUCTS];
 
 export default function PMProductsPage() {
+  const t = useTranslations();
   const [products, setProducts] = useState(productList);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -86,21 +88,21 @@ export default function PMProductsPage() {
   };
 
   const getStockBadge = (p: Product) => {
-    if (p.upcoming) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">Upcoming</span>;
-    if (p.stock === 0) return <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs text-destructive">Out of stock</span>;
-    if (p.stock <= 5) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">Low</span>;
-    return <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">In stock</span>;
+    if (p.upcoming) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">{t("pmProducts.upcoming")}</span>;
+    if (p.stock === 0) return <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs text-destructive">{t("pmProducts.outOfStock")}</span>;
+    if (p.stock <= 5) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">{t("pmProducts.low")}</span>;
+    return <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">{t("pmProducts.inStock")}</span>;
   };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Products</h1>
-          <p className="text-muted-foreground">Add and edit products</p>
+          <h1 className="text-2xl font-bold">{t("pmProducts.title")}</h1>
+          <p className="text-muted-foreground">{t("pmProducts.subtitle")}</p>
         </div>
         <Button onClick={openAdd} className="bg-gradient-to-r from-primary to-primary/90">
-          <Plus className="mr-2 h-4 w-4" /> Add Product
+          <Plus className="mr-2 h-4 w-4" /> {t("pmProducts.addProduct")}
         </Button>
       </div>
       <Card className="glass-card border-white/20">
@@ -108,14 +110,14 @@ export default function PMProductsPage() {
           <div className="flex flex-col gap-4 sm:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input placeholder={t("pmProducts.search")} className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={t("pmProducts.category")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="all">{t("pmProducts.all")}</SelectItem>
                 {MOCK_CATEGORIES.map((c) => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
@@ -126,8 +128,8 @@ export default function PMProductsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="upcoming">Upcoming only</SelectItem>
+                <SelectItem value="all">{t("pmProducts.all")}</SelectItem>
+                <SelectItem value="upcoming">{t("pmProducts.upcomingOnly")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -137,11 +139,11 @@ export default function PMProductsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="text-left p-4 font-medium">Product</th>
-                  <th className="text-left p-4 font-medium">Category</th>
-                  <th className="text-left p-4 font-medium">Price</th>
-                  <th className="text-left p-4 font-medium">Stock</th>
-                  <th className="text-right p-4 font-medium">Actions</th>
+                  <th className="text-left p-4 font-medium">{t("pmProducts.product")}</th>
+                  <th className="text-left p-4 font-medium">{t("pmProducts.category")}</th>
+                  <th className="text-left p-4 font-medium">{t("pmProducts.price")}</th>
+                  <th className="text-left p-4 font-medium">{t("pmProducts.stock")}</th>
+                  <th className="text-right p-4 font-medium">{t("pmProducts.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -173,29 +175,29 @@ export default function PMProductsPage() {
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingProduct ? "Edit Product" : "Add Product"}</DialogTitle>
+            <DialogTitle>{editingProduct ? t("pmProducts.editProduct") : t("pmProducts.addProduct")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(saveProduct)} className="space-y-4">
             <div>
-              <Label>Name</Label>
+              <Label>{t("pmProducts.name")}</Label>
               <Input {...form.register("name", { required: true })} className="mt-1" />
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{t("pmProducts.description")}</Label>
               <Input {...form.register("description")} className="mt-1" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Price (₹)</Label>
+                <Label>{t("pmProducts.priceInr")}</Label>
                 <Input type="number" {...form.register("price", { valueAsNumber: true })} className="mt-1" />
               </div>
               <div>
-                <Label>Stock</Label>
+                <Label>{t("pmProducts.stock")}</Label>
                 <Input type="number" {...form.register("stock", { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
             <div>
-              <Label>Category</Label>
+              <Label>{t("pmProducts.category")}</Label>
               <Select
                 value={form.watch("categoryId")}
                 onValueChange={(v) => {
@@ -215,7 +217,7 @@ export default function PMProductsPage() {
               </Select>
             </div>
             <div>
-              <Label>Image URL (preview only)</Label>
+              <Label>{t("pmProducts.imageUrlPreview")}</Label>
               <Input {...form.register("image")} className="mt-1" />
               {form.watch("image") && (
                 <div className="mt-2 h-24 w-24 rounded-lg border overflow-hidden bg-muted">
@@ -225,11 +227,11 @@ export default function PMProductsPage() {
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="pm-upcoming" {...form.register("upcoming")} className="rounded border" />
-              <Label htmlFor="pm-upcoming">Upcoming product (Notify me)</Label>
+              <Label htmlFor="pm-upcoming">{t("pmProducts.upcomingProductNotify")}</Label>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-              <Button type="submit">Save</Button>
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>{t("pmProducts.cancel")}</Button>
+              <Button type="submit">{t("pmProducts.save")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

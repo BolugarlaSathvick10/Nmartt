@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { MapPin, CheckCircle, Navigation } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCartStore } from "@/store";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,37 +28,38 @@ const COUPON_CODES: Record<string, number> = {
 };
 
 function CouponBox() {
+  const t = useTranslations();
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleApply = () => {
     if (!coupon.trim()) {
-      setError("Enter a coupon code");
+      setError(t("checkout.enterCouponCode"));
       return;
     }
     if (COUPON_CODES[coupon.toUpperCase()]) {
       setApplied(coupon.toUpperCase());
       setError(null);
     } else {
-      setError("Invalid coupon code");
+      setError(t("checkout.invalidCouponCode"));
     }
   };
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Coupon Code</label>
+      <label className="text-sm font-medium">{t("checkout.couponCode")}</label>
       <div className="flex gap-2">
         <Input
-          placeholder="Enter coupon code"
+          placeholder={t("checkout.enterCouponCode")}
           value={coupon}
           onChange={(e) => setCoupon(e.target.value)}
           className="flex-1"
         />
-        <Button onClick={handleApply} variant="outline">Apply</Button>
+        <Button onClick={handleApply} variant="outline">{t("checkout.apply")}</Button>
       </div>
       {error && <p className="text-xs text-destructive">{error}</p>}
-      {applied && <p className="text-xs text-green-600">Coupon {applied} applied!</p>}
+      {applied && <p className="text-xs text-green-600">{t("checkout.couponApplied", { code: applied })}</p>}
     </div>
   );
 }
@@ -76,6 +78,7 @@ function getDiscountAmount(): number {
 }
 
 export default function CheckoutPage() {
+  const t = useTranslations();
   const router = useRouter();
   const { items, totalAmount, clearCart } = useCartStore();
   const [locationValid, setLocationValid] = useState<boolean | null>(null);
@@ -98,7 +101,7 @@ export default function CheckoutPage() {
 
   const accessLocation = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
-      setLocationError("Geolocation not supported");
+      setLocationError(t("checkout.geoNotSupported"));
       return;
     }
     setGettingLocation(true);
@@ -110,12 +113,12 @@ export default function CheckoutPage() {
         setGettingLocation(false);
       },
       () => {
-        setLocationError("Could not get location. Use address instead or allow location access.");
+        setLocationError(t("checkout.geoAccessFailed"));
         setGettingLocation(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
-  }, []);
+  }, [t]);
 
   /** When user edits address/pincode, switch map back to address-based location */
   const address = form.watch("address");
@@ -135,10 +138,11 @@ export default function CheckoutPage() {
   if (items.length === 0 && !locationValid) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-        <h1 className="text-2xl font-bold">Checkout</h1>
+        <h1 className="text-2xl font-bold">{t("checkout.title")}</h1>
         <Card className="glass-card border-white/20">
           <CardContent className="py-8 text-center text-muted-foreground">
-            Your cart is empty. <Button variant="link" className="p-0 h-auto" onClick={() => router.push("/user/home")}>Continue shopping</Button>
+            {t("checkout.cartEmpty")}{" "}
+            <Button variant="link" className="p-0 h-auto" onClick={() => router.push("/user/home")}>{t("checkout.continueShopping")}</Button>
           </CardContent>
         </Card>
       </motion.div>
@@ -147,32 +151,32 @@ export default function CheckoutPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-      <h1 className="text-2xl font-bold">Checkout</h1>
+      <h1 className="text-2xl font-bold">{t("checkout.title")}</h1>
 
       <Card className="glass-card border-white/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" /> Delivery address
+            <MapPin className="h-5 w-5" /> {t("checkout.deliveryAddress")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label>Address</Label>
-            <Input {...form.register("address", { required: true })} className="mt-1" placeholder="Street, city, state" />
+            <Label>{t("checkout.address")}</Label>
+            <Input {...form.register("address", { required: true })} className="mt-1" placeholder={t("checkout.addressPlaceholder")} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Mobile</Label>
+              <Label>{t("checkout.mobile")}</Label>
               <Input {...form.register("mobile", { required: true })} className="mt-1" />
             </div>
             <div>
-              <Label>Pincode</Label>
+              <Label>{t("checkout.pincode")}</Label>
               <Input {...form.register("pincode", { required: true })} className="mt-1" />
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" onClick={validateLocation} disabled={validating}>
-              {validating ? "Validating..." : "Validate location (mock)"}
+              {validating ? t("checkout.validatingLocation") : t("checkout.validateLocationMock")}
             </Button>
             <Button
               type="button"
@@ -182,11 +186,11 @@ export default function CheckoutPage() {
               className="gap-2"
             >
               <Navigation className="h-4 w-4" />
-              {gettingLocation ? "Getting location…" : "Access location"}
+              {gettingLocation ? t("checkout.gettingLocation") : t("checkout.accessLocation")}
             </Button>
             {locationValid === true && (
               <span className="flex items-center gap-1 text-sm text-primary">
-                <CheckCircle className="h-4 w-4" /> Serviceable
+                <CheckCircle className="h-4 w-4" /> {t("checkout.serviceable")}
               </span>
             )}
           </div>
@@ -195,13 +199,13 @@ export default function CheckoutPage() {
           )}
           {currentLocationCoords && (
             <p className="text-sm text-muted-foreground">
-              Using your current location on the map. Change address above to use address instead.
+              {t("checkout.usingCurrentLocation")}
             </p>
           )}
           <div className="pt-2">
-            <p className="text-sm font-medium mb-2">Route from store to your location</p>
+            <p className="text-sm font-medium mb-2">{t("checkout.routeTitle")}</p>
             <p className="text-xs text-muted-foreground mb-1">
-              From is always the shop; your location updates when you use Access location or change address.
+              {t("checkout.routeSubtitle")}
             </p>
             <DeliveryMapClient
               userLocation={userLocationForMap}
@@ -214,7 +218,7 @@ export default function CheckoutPage() {
 
       <Card className="glass-card border-white/20">
         <CardHeader>
-          <CardTitle>Order summary</CardTitle>
+          <CardTitle>{t("checkout.orderSummary")}</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Coupon Input */}
@@ -231,15 +235,15 @@ export default function CheckoutPage() {
 
           <div className="mt-4 space-y-2">
             <div className="flex justify-between font-medium">
-              <span>Subtotal</span>
+              <span>{t("checkout.subtotal")}</span>
               <span>{formatPrice(totalAmount())}</span>
             </div>
             <div className="flex justify-between font-medium">
-              <span>Discount</span>
+              <span>{t("checkout.discount")}</span>
               <span id="checkout-discount">{formatPrice(getDiscountAmount())}</span>
             </div>
             <div className="flex justify-between font-semibold text-lg">
-              <span>Final Total</span>
+              <span>{t("checkout.finalTotal")}</span>
               <span id="checkout-final">{formatPrice(Math.max(0, totalAmount() - getDiscountAmount()))}</span>
             </div>
           </div>
@@ -248,7 +252,7 @@ export default function CheckoutPage() {
             className="w-full mt-4 bg-gradient-to-r from-primary to-primary/90"
             onClick={form.handleSubmit(onSubmit)}
           >
-            Place order
+            {t("checkout.placeOrder")}
           </Button>
         </CardContent>
       </Card>

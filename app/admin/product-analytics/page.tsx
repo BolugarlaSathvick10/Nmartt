@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   LineChart,
   Line,
@@ -24,6 +25,7 @@ import { formatPrice } from "@/lib/utils";
 const COLORS = ["#4f46e5", "#f97316", "#10b981", "#f59e0b", "#ef4444"];
 
 export default function ProductAnalyticsPage() {
+  const t = useTranslations();
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -49,9 +51,9 @@ export default function ProductAnalyticsPage() {
     sales: d.sales + (selected ? (selected.id.charCodeAt(1) % 5) * 1000 : 0),
   }));
   const stockDistribution = [
-    { name: "In stock", value: selected ? Math.max(0, selected.stock) : 120 },
-    { name: "Reserved", value: 20 },
-    { name: "Damaged", value: 8 },
+    { name: t("adminAnalytics.inStock"), value: selected ? Math.max(0, selected.stock) : 120 },
+    { name: t("adminAnalytics.reserved"), value: 20 },
+    { name: t("adminAnalytics.damaged"), value: 8 },
   ];
 
   return (
@@ -59,15 +61,15 @@ export default function ProductAnalyticsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
-            Product Analytics
+            {t("adminAnalytics.title")}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Search products and view mock analytics
+            {t("adminAnalytics.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Input
-            placeholder="Search product or category"
+            placeholder={t("adminAnalytics.searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="border-gray-200"
@@ -76,7 +78,7 @@ export default function ProductAnalyticsPage() {
             onClick={() => setSelectedId(results[0]?.id ?? null)}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
-            Search
+            {t("adminAnalytics.search")}
           </Button>
         </div>
       </div>
@@ -87,9 +89,9 @@ export default function ProductAnalyticsPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  Sales Trend
+                  {t("adminAnalytics.salesTrend")}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">7-day overview</p>
+                <p className="text-sm text-gray-500 mt-1">{t("adminAnalytics.sevenDayOverview")}</p>
               </div>
               <div className="min-w-0" style={{ width: "100%", height: 220 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -122,9 +124,9 @@ export default function ProductAnalyticsPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  Monthly Sales
+                  {t("adminAnalytics.monthlySales")}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">Sales breakdown</p>
+                <p className="text-sm text-gray-500 mt-1">{t("adminAnalytics.salesBreakdown")}</p>
               </div>
               <div className="min-w-0" style={{ width: "100%", height: 220 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -154,10 +156,10 @@ export default function ProductAnalyticsPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  Stock Distribution
+                  {t("adminAnalytics.stockDistribution")}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
-                  Current inventory status
+                  {t("adminAnalytics.currentInventoryStatus")}
                 </p>
               </div>
               <div className="min-w-0" style={{ width: "100%", height: 220 }}>
@@ -185,19 +187,19 @@ export default function ProductAnalyticsPage() {
               </div>
               <div className="space-y-2 pt-4 border-t border-gray-200">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Current Stock:</span>
+                  <span className="text-sm text-gray-600">{t("adminAnalytics.currentStock")}</span>
                   <strong className="text-gray-900">
                     {selected ? selected.stock : 0}
                   </strong>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">
-                    Low Stock Threshold:
+                    {t("adminAnalytics.lowStockThreshold")}
                   </span>
                   <strong className="text-gray-900">5</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Stock Health:</span>
+                  <span className="text-sm text-gray-600">{t("adminAnalytics.stockHealth")}</span>
                   <strong
                     className={
                       selected && selected.stock > 20
@@ -208,10 +210,10 @@ export default function ProductAnalyticsPage() {
                     }
                   >
                     {selected && selected.stock > 20
-                      ? "Good"
+                      ? t("adminAnalytics.good")
                       : selected && selected.stock > 5
-                      ? "Warning"
-                      : "Critical"}
+                      ? t("adminAnalytics.warning")
+                      : t("adminAnalytics.critical")}
                   </strong>
                 </div>
               </div>
@@ -222,10 +224,10 @@ export default function ProductAnalyticsPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  Stock Progress
+                  {t("adminAnalytics.stockProgress")}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
-                  Visual representation
+                  {t("adminAnalytics.visualRepresentation")}
                 </p>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -240,7 +242,7 @@ export default function ProductAnalyticsPage() {
                 />
               </div>
               <div className="text-xs text-gray-500 pt-2">
-                Current level indicator for stock management
+                {t("adminAnalytics.stockProgressHint")}
               </div>
             </div>
           </Card>
@@ -251,30 +253,30 @@ export default function ProductAnalyticsPage() {
         <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900">
-              Product Summary
+              {t("adminAnalytics.productSummary")}
             </h3>
             {selected ? (
               <div className="space-y-3">
                 <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-sm text-gray-600">Name</span>
+                  <span className="text-sm text-gray-600">{t("adminAnalytics.name")}</span>
                   <span className="text-sm font-medium text-gray-900">
                     {selected.name}
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-sm text-gray-600">Category</span>
+                  <span className="text-sm text-gray-600">{t("adminAnalytics.category")}</span>
                   <span className="text-sm font-medium text-gray-900">
                     {selected.categoryName}
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-sm text-gray-600">Total Sold</span>
+                  <span className="text-sm text-gray-600">{t("adminAnalytics.totalSold")}</span>
                   <span className="text-sm font-medium text-gray-900">
                     ~{(selected.price % 10) * 120}
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-200">
-                  <span className="text-sm text-gray-600">Revenue</span>
+                  <span className="text-sm text-gray-600">{t("adminAnalytics.revenue")}</span>
                   <span className="text-sm font-medium text-green-600">
                     {formatPrice(
                       ((selected.price % 10) * 120) * selected.price
@@ -282,7 +284,7 @@ export default function ProductAnalyticsPage() {
                   </span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-sm text-gray-600">Current Stock</span>
+                  <span className="text-sm text-gray-600">{t("adminAnalytics.currentStockNoColon")}</span>
                   <span className="text-sm font-medium text-gray-900">
                     {selected.stock}
                   </span>
@@ -290,7 +292,7 @@ export default function ProductAnalyticsPage() {
               </div>
             ) : (
               <div className="text-sm text-gray-500">
-                Select a product to view details
+                {t("adminAnalytics.selectProduct")}
               </div>
             )}
           </div>
@@ -299,7 +301,7 @@ export default function ProductAnalyticsPage() {
         <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900">
-              Top Search Results
+              {t("adminAnalytics.topSearchResults")}
             </h3>
             <div className="grid gap-2 max-h-[400px] overflow-y-auto min-w-0">
               {results.map((r) => (
