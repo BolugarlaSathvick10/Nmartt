@@ -8,12 +8,28 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./*"] }
+    "paths": {
+      "@/*": ["./*"],
+      "@/components": ["./frontend/components"],
+      "@/components/*": ["./frontend/components/*"],
+      "@/messages": ["./frontend/messages"],
+      "@/messages/*": ["./frontend/messages/*"],
+      "@/store": ["./frontend/store"],
+      "@/store/*": ["./frontend/store/*"],
+      "@/types": ["./frontend/types"],
+      "@/types/*": ["./frontend/types/*"],
+      "@/i18n": ["./frontend/i18n"],
+      "@/i18n/*": ["./frontend/i18n/*"],
+      "@/lib/repositories": ["./backend/repositories/index.ts"],
+      "@/lib/repositories/*": ["./backend/repositories/*"],
+      "@/lib/server/*": ["./backend/server/*"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

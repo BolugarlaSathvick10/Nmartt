@@ -1,6 +1,6 @@
-# N-Mart — Grocery Delivery (Frontend)
+# N-Mart — Grocery Delivery (Frontend + Backend)
 
-A fully functional **frontend-only** grocery delivery system built with Next.js 14, TypeScript, TailwindCSS, ShadCN-style UI, Framer Motion, React Hook Form, and Zustand.
+A full-stack grocery delivery system built with Next.js 14, TypeScript, TailwindCSS, ShadCN-style UI, Framer Motion, React Hook Form, Zustand, and Prisma/PostgreSQL.
 
 ## Tech Stack
 
@@ -25,6 +25,38 @@ A fully functional **frontend-only** grocery delivery system built with Next.js 
 
 No real backend or Firebase. Login state is stored in Zustand (persisted).
 
+## Data Source Mode (Local or API)
+
+The app now includes a repository bridge so frontend modules can switch from local state to API endpoints without page-level rewrites.
+
+Set this environment variable:
+
+```bash
+NEXT_PUBLIC_DATA_SOURCE_MODE=local
+```
+
+or
+
+```bash
+NEXT_PUBLIC_DATA_SOURCE_MODE=api
+```
+
+- `local` (default): uses Zustand/localStorage adapters.
+- `api`: uses fetch-based adapters that call Next.js API routes.
+
+### API Endpoints Added
+
+- `GET /api/catalog`
+- `GET /api/catalog/activities?limit=50`
+- `POST /api/catalog/products`
+- `PUT /api/catalog/products/:id`
+- `PATCH /api/catalog/products/:id/price`
+- `DELETE /api/catalog/products/:id`
+- `GET /api/users`
+- `GET /api/auth/activities?limit=50`
+
+For product mutations in API mode, role is read from `x-user-role` header (`admin`/`pm` for create/update/price, `admin` for delete).
+
 ## Getting Started
 
 ```bash
@@ -38,31 +70,32 @@ Open [http://localhost:3000](http://localhost:3000). You will be redirected to `
 
 ```
 app/
-  login/          # Unified login & signup (tabs)
-  signup/         # Redirects to /login
-  admin/          # Admin dashboard, products, categories, orders, users, delivery, settings
-  pm/             # Product Manager: dashboard, products, categories, inventory
-  delivery/       # Delivery: dashboard, assigned orders, history
-  user/
-    home/         # Product grid, categories, cart drawer
-    checkout/     # Address, location validation (mock), place order
-    order-confirmation/
-    orders/       # My orders, track order (timeline UI)
-    profile/      # Profile (mock)
-components/
-  ui/             # Button, Input, Card, Dialog, Tabs, Select, etc.
-  cart-drawer.tsx
-  theme-provider.tsx
-  theme-toggle.tsx
-store/
-  auth-store.ts   # Mock login/signup, redirect by role
-  cart-store.ts   # Cart items, total
-  ui-store.ts     # Theme, sidebar open
+  (frontend)/     # User-facing/admin/pm/delivery routes (URLs unchanged)
+    login/
+    signup/
+    admin/
+    pm/
+    delivery/
+    user/
+  api/            # Backend API routes
+
+frontend/
+  components/     # UI and layout components
+  store/          # Zustand client stores
+  messages/       # i18n message bundles
+  i18n/           # next-intl request config
+  types/          # Shared UI-side TS types
+
+backend/
+  repositories/   # Data source adapters (local/api)
+  server/         # Server-side data/auth logic
+
 lib/
-  utils.ts
-  mock-data.ts    # 60 products, categories, orders, users, chart data
-types/
-  index.ts        # User, Product, Order, CartItem, etc.
+  utils.ts        # shared helpers
+  prisma.ts       # Prisma client bootstrap
+
+prisma/
+  schema.prisma   # PostgreSQL schema
 ```
 
 ## Features

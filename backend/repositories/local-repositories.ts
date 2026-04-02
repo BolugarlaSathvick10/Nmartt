@@ -1,0 +1,121 @@
+"use client";
+
+import { useAuthStore } from "@/store/auth-store";
+import { useCatalogStore } from "@/store/catalog-store";
+import { useOrderStore } from "@/store/order-store";
+import type {
+  AuthRepository,
+  CatalogRepository,
+  MutationResult,
+  OrderRepository,
+  PlaceOrderInput,
+} from "@/lib/repositories/contracts";
+import type { OrderStatus, Product } from "@/types";
+
+function toResult(ok: boolean, fallbackError: string): MutationResult {
+  return ok ? { ok: true } : { ok: false, error: fallbackError };
+}
+
+class LocalCatalogRepository implements CatalogRepository {
+  async getSnapshot() {
+    const state = useCatalogStore.getState();
+    return {
+      categories: state.categories,
+      products: state.products,
+    };
+  }
+
+  async createProduct(product: Product) {
+    const ok = useCatalogStore.getState().addProduct(product);
+    return toResult(ok, "Not authorized to create product");
+  }
+
+  async updateProduct(product: Product) {
+    const ok = useCatalogStore.getState().updateProduct(product);
+    return toResult(ok, "Not authorized to update product");
+  }
+
+  async updateProductPrice(productId: string, price: number) {
+    const ok = useCatalogStore.getState().updatePrice(productId, price);
+    return toResult(ok, "Not authorized to update price");
+  }
+
+  async deleteProduct(productId: string) {
+    const ok = useCatalogStore.getState().deleteProduct(productId);
+    return toResult(ok, "Not authorized to delete product");
+  }
+
+  async getProductActivities(limit = 50) {
+    return useCatalogStore.getState().productActivities.slice(0, limit);
+  }
+
+  async clearProductActivities(olderThanDays?: number) {
+    useCatalogStore.getState().clearProductActivities(olderThanDays);
+    return { ok: true };
+  }
+}
+
+class LocalAuthRepository implements AuthRepository {
+  async getUsers() {
+    return useAuthStore.getState().users;
+  }
+
+  async login(email: string, password: string) {
+    const result = useAuthStore.getState().login(email, password);
+    if (!result.success) {
+      return { ok: false, error: result.error };
+    }
+
+    return {
+      ok: true,
+      user: useAuthStore.getState().user ?? undefined,
+      redirect: result.redirect,
+    };
+  }
+
+  async signup(name: string, email: string, password: string, mobile?: string) {
+    const result = useAuthStore.getState().signup(name, email, password, mobile);
+    if (!result.success) {
+      return { ok: false, error: result.error };
+    }
+
+    return { ok: true, user: useAuthStore.getState().user ?? undefined };
+  }
+
+  async getLoginActivities(limit = 50) {
+    return useAuthStore.getState().loginActivities.slice(0, limit);
+  }
+
+  async clearLoginActivities(olderThanDays?: number) {
+    useAuthStore.getState().clearLoginActivities(olderThanDays);
+    return { ok: true };
+  }
+
+  async updateProfile(updates: { name?: string; mobile?: string }) {
+    const result = useAuthStore.getState().updateProfile(updates);
+    return {
+      ok: result.success,
+      error: result.error,
+    };
+  }
+}
+
+class LocalOrderRepository implements OrderRepository {
+  async getOrders() {
+    return useOrderStore.getState().orders;
+  }
+
+  async placeOrder(input: PlaceOrderInput) {
+    const order = useOrderStore.getState().placeOrder(input);
+    return { ok: true, order };
+  }
+
+  async updateOrderStatus(orderId: string, status: OrderStatus) {
+    const ok = useOrderStore.getState().updateOrderStatus(orderId, status);
+    return toResult(ok, "Failed to update order status");
+  }
+}
+
+export const localCatalogRepository = new LocalCatalogRepository();
+export const localAuthRepository = new LocalAuthRepository();
+export const localOrderRepository = new LocalOrderRepository();

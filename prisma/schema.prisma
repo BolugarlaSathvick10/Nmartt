@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  admin
+  pm
+  delivery
+  user
+}
+
+enum AuthMethod {
+  password
+  otp
+  signup
+}
+
+enum AuthStatus {
+  success
+  failed
+}
+
+enum ProductActivityAction {
+  create
+  update
+  update_price
+  delete
+}
+
+enum OrderStatus {
+  pending
+  accepted
+  out_for_delivery
+  delivered
+  cancelled
+  rejected
+}
+
+model Category {
+  id           String    @id
+  name         String
+  slug         String    @unique
+  image        String?
+  productCount Int       @default(0)
+  products     Product[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Product {
+  id            String             @id
+  name          String
+  description   String
+  price         Int
+  originalPrice Int?
+  image         String
+  categoryId    String
+  categoryName  String
+  stock         Int
+  unit          String
+  createdAt     DateTime
+  upcoming      Boolean            @default(false)
+  category      Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+}
+
+model ProductActivity {
+  id           String                 @id
+  productId    String
+  productName  String
+  action       ProductActivityAction
+  actorUserId  String?
+  actorName    String?
+  actorRole    UserRole?
+  oldPrice     Int?
+  newPrice     Int?
+  timestamp    DateTime               @default(now())
+
+  @@index([timestamp])
+  @@index([productId])
+}
+
+model User {
+  id              String          @id
+  name            String
+  email           String          @unique
+  mobile          String?
+  role            UserRole
+  avatar          String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  loginActivities LoginActivity[]
+  credential      AuthCredential?
+  orders          Order[]         @relation("UserOrders")
+
+  @@index([role])
+}
+
+model LoginActivity {
+  id        String     @id
+  userId    String?
+  email     String
+  role      UserRole?
+  method    AuthMethod
+  status    AuthStatus
+  timestamp DateTime   @default(now())
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([timestamp])
+  @@index([email])
+}
+
+model Order {
+  id              String      @id
+  userId          String
+  userName        String
+  userMobile      String
+  userAddress     String
+  items           Json
+  total           Int
+  status          OrderStatus @default(pending)
+  deliveryBoyId   String?
+  deliveryBoyName String?
+  createdAt       DateTime    @default(now())
+  deliveredAt     DateTime?
+  user            User        @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model AuthCredential {
+  id        String   @id
+  userId    String   @unique
+  email     String   @unique
+  password  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
