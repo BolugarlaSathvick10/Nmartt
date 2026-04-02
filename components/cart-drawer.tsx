@@ -9,7 +9,7 @@ import { useCartStore } from "@/store";
 import { useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import type { Product } from "@/types";
 
 interface CartDrawerProps {
   open: boolean;
@@ -123,7 +123,6 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 function CartHeader({
   t,
   onClose,
-  cartItemsCount,
 }: {
   t: (key: string) => string;
   onClose: () => void;
@@ -240,7 +239,7 @@ function CartItemCard({
   onRemove,
   index,
 }: {
-  product: any;
+  product: Product;
   quantity: number;
   onQuantityChange: (qty: number) => void;
   onRemove: () => void;

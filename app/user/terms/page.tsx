@@ -63,10 +63,9 @@ const sections = [
 export default function TermsPage() {
   return (
     <div className="space-y-8">
-      <div className="max-w-3xl mx-auto">
-        <BackButton />
-        
-        <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 mt-6">
+      <BackButton />
+      
+      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Terms & Policies</h1>
             <p className="text-gray-600 mt-2">
@@ -114,7 +113,6 @@ export default function TermsPage() {
             </ul>
           </Card>
         </motion.div>
-      </div>
     </div>
   );
 }

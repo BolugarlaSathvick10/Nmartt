@@ -13,7 +13,7 @@ export default function UserProfilePage() {
   const user = useAuthStore((s) => s.user);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-xl space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Profile</h1>
         <p className="text-muted-foreground">Your account details</p>

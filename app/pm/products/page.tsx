@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { Search, Plus, Pencil, Package } from "lucide-react";
+import { Search, Plus, Pencil } from "lucide-react";
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mock-data";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/utils";

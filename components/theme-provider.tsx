@@ -21,7 +21,6 @@ const ThemeContext = createContext<{
 
 export function ThemeProvider({
   children,
-  attribute = "class",
   defaultTheme = "system",
   enableSystem = true,
 }: ThemeProviderProps) {

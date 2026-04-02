@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, AlertTriangle, Package } from "lucide-react";
+import { Search, AlertTriangle } from "lucide-react";
 import { MOCK_PRODUCTS } from "@/lib/mock-data";
 import { formatPrice } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

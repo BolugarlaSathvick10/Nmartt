@@ -6,7 +6,6 @@ import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
   product: Product;

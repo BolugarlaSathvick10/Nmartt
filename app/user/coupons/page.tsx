@@ -51,7 +51,7 @@ const AVAILABLE_COUPONS: UserCoupon[] = [
 ];
 
 export default function UserCouponsPage() {
-  const [coupons, setCoupons] = useState<UserCoupon[]>(AVAILABLE_COUPONS);
+  const [coupons] = useState<UserCoupon[]>(AVAILABLE_COUPONS);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const handleCopy = (code: string) => {
@@ -108,8 +108,8 @@ export default function UserCouponsPage() {
                           onClick={() => handleCopy(coupon.code)}
                           className={`flex-shrink-0 transition-all ${
                             copiedCode === coupon.code
-                              ? "bg-green-600 hover:bg-green-700 text-white"
-                              : "bg-green-50 hover:bg-green-100 text-green-600"
+                              ? "bg-green-400 hover:bg-green-100 text-white-600"
+                              : "bg-green-400 hover:bg-green-100 text-white-600"
                           }`}
                         >
                           {copiedCode === coupon.code ? (

@@ -17,9 +17,9 @@ export default function DeliveryDashboardPage() {
         <h1 className="text-2xl font-bold">Delivery Dashboard</h1>
         <p className="text-muted-foreground">Your assigned orders and earnings</p>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="glass-card border-white/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Assigned orders</CardTitle>
               <ClipboardList className="h-4 w-4 text-primary" />
@@ -30,7 +30,7 @@ export default function DeliveryDashboardPage() {
           </Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="glass-card border-white/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total deliveries</CardTitle>
               <Truck className="h-4 w-4 text-primary" />
@@ -41,7 +41,7 @@ export default function DeliveryDashboardPage() {
           </Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="glass-card border-white/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Earnings (mock)</CardTitle>
               <IndianRupee className="h-4 w-4 text-primary" />
@@ -52,7 +52,7 @@ export default function DeliveryDashboardPage() {
           </Card>
         </motion.div>
       </div>
-      <Card className="glass-card border-white/20">
+      <Card>
         <CardHeader>
           <CardTitle>Quick links</CardTitle>
         </CardHeader>

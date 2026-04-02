@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 
 type LoginForm = { email: string; password: string };
 type SignupForm = { name: string; email: string; password: string; mobile: string; otp: string };
@@ -52,7 +52,7 @@ export default function LoginPage() {
     }
   };
 
-  const onLoginOTP = async (data: OTPForm) => {
+  const onLoginOTP = async () => {
     setError("");
     if (!otpSent) {
       setOtpSent(true);
@@ -186,7 +186,7 @@ export default function LoginPage() {
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
-                      onSubmit={otpForm.handleSubmit(onLoginOTP)}
+                      onSubmit={otpForm.handleSubmit(() => onLoginOTP())}
                       className="space-y-4"
                     >
                       <div>

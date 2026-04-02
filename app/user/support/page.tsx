@@ -13,14 +13,13 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 export default function SupportPage() {
   return (
     <div className="space-y-8">
-      <div className="max-w-2xl mx-auto">
-        <BackButton />
-        
-        <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 mt-6">
+      <BackButton />
+      
+      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Customer Support</h1>
             <p className="text-gray-600 mt-2">
-              We're here to help. Get in touch with our support team.
+              We&apos;re here to help. Get in touch with our support team.
             </p>
           </div>
 
@@ -145,7 +144,6 @@ export default function SupportPage() {
             </p>
           </Card>
         </motion.div>
-      </div>
     </div>
   );
 }

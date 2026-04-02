@@ -1,22 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { Search, Plus, Pencil, Trash2, Package } from "lucide-react";
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mock-data";
+import { Search, Plus, Pencil } from "lucide-react";
+import { MOCK_CATEGORIES, MOCK_PRODUCTS } from "@/lib/mock-data";
 import type { Product } from "@/types";
-import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -28,16 +27,18 @@ import {
 
 const productList = [...MOCK_PRODUCTS];
 
+type ProductForm = Product & { upcoming?: boolean };
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState(productList);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [upcomingFilter, setUpcomingFilter] = useState<"all" | "upcoming">("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [inlinePrice, setInlinePrice] = useState<Record<string, number>>({});
 
-  const form = useForm<Product & { imageFile?: FileList; upcoming?: boolean }>({
+  const form = useForm<ProductForm>({
     defaultValues: {
       id: "",
       name: "",
@@ -82,18 +83,18 @@ export default function AdminProductsPage() {
     setModalOpen(true);
   };
 
-  const openEdit = (p: Product) => {
-    setEditingProduct(p);
-    form.reset({ ...p, upcoming: p.upcoming ?? false });
+  const openEdit = (product: Product) => {
+    setEditingProduct(product);
+    form.reset({ ...product, upcoming: product.upcoming ?? false });
     setModalOpen(true);
   };
 
-  const saveProduct = (data: Product & { upcoming?: boolean }) => {
-    const payload = { ...data, upcoming: data.upcoming ?? false };
+  const saveProduct = (data: ProductForm) => {
+    const payload: Product = { ...data, upcoming: data.upcoming ?? false };
     if (editingProduct) {
-      setProducts((prev) => prev.map((x) => (x.id === data.id ? payload : x)));
+      setProducts((prev) => prev.map((p) => (p.id === payload.id ? payload : p)));
     } else {
-      setProducts((prev) => [{ ...payload } as Product, ...prev]);
+      setProducts((prev) => [payload, ...prev]);
     }
     setModalOpen(false);
   };
@@ -103,16 +104,16 @@ export default function AdminProductsPage() {
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, price } : p)));
   };
 
-  function getStockBadge(p: Product) {
-    if (p.upcoming) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-400">Upcoming</span>;
+  const getStockBadge = (p: Product) => {
+    if (p.upcoming) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">Upcoming</span>;
     if (p.stock === 0) return <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs text-destructive">Out of stock</span>;
-    if (p.stock <= 5) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-400">Low</span>;
+    if (p.stock <= 5) return <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-600">Low</span>;
     return <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">In stock</span>;
-  }
+  };
 
   return (
-    <div className="space-y-8">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <div className="w-full flex flex-col gap-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-6 min-w-0">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Products</h1>
@@ -123,7 +124,7 @@ export default function AdminProductsPage() {
           </Button>
         </div>
 
-        <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-4 items-center mt-6">
+        <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-4 items-center">
           <div className="relative flex-1 min-w-[200px] w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
@@ -133,6 +134,7 @@ export default function AdminProductsPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="w-full md:w-[200px] border border-gray-200 rounded-lg px-3 py-2 bg-white">
               <SelectValue placeholder="Category" />
@@ -142,22 +144,23 @@ export default function AdminProductsPage() {
               {MOCK_CATEGORIES.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
-              </SelectContent>
-            </Select>
-            <Select value={upcomingFilter} onValueChange={(v: "all" | "upcoming") => setUpcomingFilter(v)}>
-              <SelectTrigger className="w-full md:w-[140px] border border-gray-200 rounded-lg px-3 py-2 bg-white">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All products</SelectItem>
-                <SelectItem value="upcoming">Upcoming only</SelectItem>
-              </SelectContent>
-            </Select>
+            </SelectContent>
+          </Select>
+
+          <Select value={upcomingFilter} onValueChange={(value) => setUpcomingFilter(value as "all" | "upcoming")}>
+            <SelectTrigger className="w-full md:w-[160px] border border-gray-200 rounded-lg px-3 py-2 bg-white">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All products</SelectItem>
+              <SelectItem value="upcoming">Upcoming only</SelectItem>
+            </SelectContent>
+          </Select>
         </Card>
 
         <Card className="bg-white rounded-xl shadow-sm border border-gray-100">
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="min-w-0 overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b bg-gray-50">
@@ -179,34 +182,35 @@ export default function AdminProductsPage() {
                           <div>
                             <p className="font-medium text-gray-900">{p.name}</p>
                             <p className="text-sm text-gray-500 line-clamp-1">{p.description}</p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-muted-foreground">{p.categoryName}</td>
-                    <td className="p-4">
-                      <input
-                        type="number"
-                        className="w-20 rounded border bg-background px-2 py-1 text-sm"
-                        value={inlinePrice[p.id] ?? p.price}
-                        onChange={(e) => updatePrice(p.id, Number(e.target.value) || 0)}
-                      />
-                    </td>
-                    <td className="p-4">{getStockBadge(p)}</td>
-                    <td className="p-4 text-right">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                      </td>
+                      <td className="p-4 text-muted-foreground">{p.categoryName}</td>
+                      <td className="p-4">
+                        <input
+                          type="number"
+                          className="w-24 rounded border bg-background px-2 py-1 text-sm"
+                          value={inlinePrice[p.id] ?? p.price}
+                          onChange={(e) => updatePrice(p.id, Number(e.target.value) || 0)}
+                        />
+                      </td>
+                      <td className="p-4">{getStockBadge(p)}</td>
+                      <td className="p-4 text-right">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-full">
           <DialogHeader>
             <DialogTitle>{editingProduct ? "Edit Product" : "Add Product"}</DialogTitle>
           </DialogHeader>
@@ -233,10 +237,10 @@ export default function AdminProductsPage() {
               <Label>Category</Label>
               <Select
                 value={form.watch("categoryId")}
-                onValueChange={(v) => {
-                  const cat = MOCK_CATEGORIES.find((c) => c.id === v);
-                  form.setValue("categoryId", v);
-                  if (cat) form.setValue("categoryName", cat.name);
+                onValueChange={(value) => {
+                  const category = MOCK_CATEGORIES.find((c) => c.id === value);
+                  form.setValue("categoryId", value);
+                  if (category) form.setValue("categoryName", category.name);
                 }}
               >
                 <SelectTrigger className="mt-1">
@@ -269,6 +273,6 @@ export default function AdminProductsPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </motion.div>
+    </div>
   );
 }

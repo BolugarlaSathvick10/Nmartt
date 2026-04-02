@@ -44,7 +44,7 @@ export default function ProductAnalyticsPage() {
   const selected = products.find((p) => p.id === selectedId) ?? results[0] ?? null;
 
   const salesTrend = MOCK_SALES_CHART;
-  const monthlySales = MOCK_SALES_CHART.map((d, i) => ({
+  const monthlySales = MOCK_SALES_CHART.map((d) => ({
     month: d.date,
     sales: d.sales + (selected ? (selected.id.charCodeAt(1) % 5) * 1000 : 0),
   }));
@@ -55,7 +55,7 @@ export default function ProductAnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="w-full flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
@@ -81,8 +81,8 @@ export default function ProductAnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        <div className="space-y-8">
+      <div className="grid lg:grid-cols-2 gap-8 min-w-0">
+        <div className="space-y-8 min-w-0">
           <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="space-y-4">
               <div>
@@ -91,7 +91,7 @@ export default function ProductAnalyticsPage() {
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">7-day overview</p>
               </div>
-              <div style={{ width: "100%", height: 220 }}>
+              <div className="min-w-0" style={{ width: "100%", height: 220 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={salesTrend}>
                     <XAxis
@@ -126,7 +126,7 @@ export default function ProductAnalyticsPage() {
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">Sales breakdown</p>
               </div>
-              <div style={{ width: "100%", height: 220 }}>
+              <div className="min-w-0" style={{ width: "100%", height: 220 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlySales}>
                     <XAxis
@@ -149,7 +149,7 @@ export default function ProductAnalyticsPage() {
           </Card>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-8 min-w-0">
           <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="space-y-4">
               <div>
@@ -160,7 +160,7 @@ export default function ProductAnalyticsPage() {
                   Current inventory status
                 </p>
               </div>
-              <div style={{ width: "100%", height: 220 }}>
+              <div className="min-w-0" style={{ width: "100%", height: 220 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -247,7 +247,7 @@ export default function ProductAnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-2 gap-8 min-w-0">
         <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900">
@@ -301,7 +301,7 @@ export default function ProductAnalyticsPage() {
             <h3 className="text-lg font-medium text-gray-900">
               Top Search Results
             </h3>
-            <div className="grid gap-2 max-h-[400px] overflow-y-auto">
+            <div className="grid gap-2 max-h-[400px] overflow-y-auto min-w-0">
               {results.map((r) => (
                 <div
                   key={r.id}

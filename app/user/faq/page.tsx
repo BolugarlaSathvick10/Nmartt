@@ -94,10 +94,9 @@ export default function FAQPage() {
 
   return (
     <div className="space-y-8">
-      <div className="max-w-3xl mx-auto">
-        <BackButton />
-        
-        <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 mt-6">
+      <BackButton />
+      
+      <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Frequently Asked Questions</h1>
             <p className="text-gray-600 mt-2">
@@ -107,13 +106,13 @@ export default function FAQPage() {
 
           {/* Search */}
           <motion.div variants={item} className="relative">
-            <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <Input
               type="text"
               placeholder="Search FAQs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-green-500"
+              className="h-11 w-full rounded-lg border border-gray-200 px-3 pl-10 focus:ring-2 focus:ring-green-500"
             />
           </motion.div>
 
@@ -179,13 +178,12 @@ export default function FAQPage() {
             <Card className="bg-green-50 rounded-xl border border-green-100 p-6">
               <h3 className="font-semibold text-green-900 mb-2">Still have questions?</h3>
               <p className="text-green-800 text-sm">
-                Can't find the answer you're looking for? Contact our customer support team.
-                We're available Mon-Sun, 9:00 AM - 10:00 PM.
+                Can&apos;t find the answer you&apos;re looking for? Contact our customer support team.
+                We&apos;re available Mon-Sun, 9:00 AM - 10:00 PM.
               </p>
             </Card>
           )}
         </motion.div>
-      </div>
     </div>
   );
 }

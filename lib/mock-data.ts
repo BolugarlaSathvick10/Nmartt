@@ -1,6 +1,5 @@
 import type { Product, Category, Order, User, SalesChartData } from "@/types";
 import { generateProducts } from "@/lib/products-data";
-import { getProductImage } from "@/lib/product-images";
 
 export const MOCK_CATEGORIES: Category[] = [
   { id: "cat-1", name: "Fruits & Vegetables", slug: "fruits-vegetables", productCount: 57 },

@@ -1,27 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ShoppingCart, Bell } from "lucide-react";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mock-data";
-import { useCartStore, useUpcomingStore } from "@/store";
-import { formatPrice } from "@/lib/utils";
-import type { Product } from "@/types";
+import { Search, ShoppingCart } from "lucide-react";
+import { MOCK_CATEGORIES, MOCK_PRODUCTS } from "@/lib/mock-data";
+import { useCartStore, useUpcomingStore, useUIStore } from "@/store";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { CartDrawer } from "@/components/cart-drawer";
-import { ProductCard } from "@/components/product-card";
 import { HorizontalProductScroll } from "@/components/horizontal-product-scroll";
+import { ProductCard } from "@/components/product-card";
+import { AppCard } from "@/components/layout/Card";
 
 const upcomingProducts = MOCK_PRODUCTS.filter((p) => p.upcoming);
 const regularProducts = MOCK_PRODUCTS.filter((p) => !p.upcoming);
@@ -29,25 +17,31 @@ const regularProducts = MOCK_PRODUCTS.filter((p) => !p.upcoming);
 export default function UserHomePage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [cartOpen, setCartOpen] = useState(false);
+
   const addItem = useCartStore((s) => s.addItem);
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const totalItems = useCartStore((s) => s.totalItems);
+  
+  const cartOpen = useUIStore((s) => s.cartOpen);
+  const setCartOpen = useUIStore((s) => s.setCartOpen);
+
   const { addInterest, removeInterest, hasInterest, getCount } = useUpcomingStore();
 
   const filtered = useMemo(() => {
     let list = regularProducts;
+
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.categoryName.toLowerCase().includes(q)
+        (p) => p.name.toLowerCase().includes(q) || p.categoryName.toLowerCase().includes(q)
       );
     }
-    if (categoryFilter !== "all")
+
+    if (categoryFilter !== "all") {
       list = list.filter((p) => p.categoryId === categoryFilter);
+    }
+
     return list;
   }, [search, categoryFilter]);
 
@@ -58,80 +52,39 @@ export default function UserHomePage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-      {/* Header Section */}
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="bg-white border-b border-gray-100"
-      >
-        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-green-600">N-Mart</h1>
-            <p className="text-sm text-gray-500">Fresh groceries delivered to your door</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:block">
-              <LanguageSwitcher />
-            </div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCartOpen(true)}
-                className="relative bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm hover:shadow-md transition"
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Cart
-                <AnimatePresence>
-                  {totalItems() > 0 && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-primary to-primary/90 text-xs text-white font-bold shadow-lg"
-                    >
-                      {totalItems()}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </Button>
-            </motion.div>
-          </div>
-        </div>
-      </motion.header>
-
-      {/* Search and Filter Section */}
-      <motion.div
+      <motion.section
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="flex flex-col gap-4 sm:flex-row bg-gradient-to-br from-primary/5 to-primary/0 rounded-xl p-4 border border-primary/10"
       >
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
-          <Input
-            placeholder="Search for products or categories..."
-            className="pl-10 bg-background/80 border-primary/20 focus:border-primary/50"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-full sm:w-[200px] bg-background/80 border-primary/20 focus:border-primary/50">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent className="bg-background border border-primary/20">
-            <SelectItem value="all">All categories</SelectItem>
-            {MOCK_CATEGORIES.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </motion.div>
+        <AppCard className="p-4 md:p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search for products..."
+                className="w-full rounded-lg border border-gray-200 px-4 py-3 pl-10 outline-none focus:border-transparent focus:ring-2 focus:ring-green-500"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <select
+              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 outline-none focus:border-transparent focus:ring-2 focus:ring-green-500 md:w-52"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="all">All categories</option>
+              {MOCK_CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </AppCard>
+      </motion.section>
 
-      {/* Search Results Section (appears when searching) */}
       <AnimatePresence>
         {hasSearchResults && (
           <motion.section
@@ -142,17 +95,13 @@ export default function UserHomePage() {
           >
             <div className="flex items-center gap-2">
               <span className="h-1 w-1 rounded-full bg-primary" />
-              <h2 className="text-xl font-bold text-foreground">
-                Search Results
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                ({filtered.length} products found)
-              </span>
+              <h2 className="text-xl font-bold text-foreground">Search Results</h2>
+              <span className="text-sm text-muted-foreground">({filtered.length} products found)</span>
             </div>
 
             {filtered.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                {filtered.map((p, i) => (
+              <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {filtered.map((p) => (
                   <ProductCard
                     key={p.id}
                     product={p}
@@ -164,11 +113,7 @@ export default function UserHomePage() {
                 ))}
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-12"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
                   <Search className="h-6 w-6 text-muted-foreground" />
                 </div>
@@ -179,7 +124,6 @@ export default function UserHomePage() {
         )}
       </AnimatePresence>
 
-      {/* Upcoming Products Section */}
       <AnimatePresence>
         {upcomingProducts.length > 0 && !hasSearchResults && (
           <HorizontalProductScroll
@@ -193,22 +137,15 @@ export default function UserHomePage() {
         )}
       </AnimatePresence>
 
-      {/* Category Scroll and Products Grid (only show when not searching) */}
       <AnimatePresence>
         {!hasSearchResults && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="space-y-6"
-          >
-            {/* Category Scroll */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <span className="h-1 w-1 rounded-full bg-primary" />
                 Categories
               </h2>
-              <div className="overflow-x-auto pb-2 -mx-4 px-4">
+              <div className="overflow-x-auto pb-2">
                 <div className="flex gap-2 min-w-max">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
@@ -221,11 +158,7 @@ export default function UserHomePage() {
                     </Button>
                   </motion.div>
                   {MOCK_CATEGORIES.map((c) => (
-                    <motion.div
-                      key={c.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
+                    <motion.div key={c.id} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button
                         variant={categoryFilter === c.id ? "default" : "outline"}
                         size="sm"
@@ -240,37 +173,27 @@ export default function UserHomePage() {
               </div>
             </div>
 
-            {/* Products Grid */}
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <span className="h-1 w-1 rounded-full bg-primary" />
-                {categoryFilter === "all"
-                  ? "All Products"
-                  : MOCK_CATEGORIES.find((c) => c.id === categoryFilter)?.name}
+                {categoryFilter === "all" ? "All Products" : MOCK_CATEGORIES.find((c) => c.id === categoryFilter)?.name}
               </h2>
+
               {filtered.length > 0 ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                  {filtered.map((p, i) => (
+                <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                  {filtered.map((p) => (
                     <ProductCard
                       key={p.id}
                       product={p}
                       quantity={getQty(p.id)}
                       onAdd={() => addItem(p)}
-                      onIncrease={() =>
-                        updateQuantity(p.id, getQty(p.id) + 1)
-                      }
-                      onDecrease={() =>
-                        updateQuantity(p.id, Math.max(0, getQty(p.id) - 1))
-                      }
+                      onIncrease={() => updateQuantity(p.id, getQty(p.id) + 1)}
+                      onDecrease={() => updateQuantity(p.id, Math.max(0, getQty(p.id) - 1))}
                     />
                   ))}
                 </div>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-12"
-                >
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
                     <ShoppingCart className="h-6 w-6 text-muted-foreground" />
                   </div>
@@ -282,7 +205,6 @@ export default function UserHomePage() {
         )}
       </AnimatePresence>
 
-      {/* Cart Drawer */}
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </motion.div>
   );

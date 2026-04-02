@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CheckCircle, Package } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -18,7 +18,7 @@ export default function OrderConfirmationPage() {
       animate={{ opacity: 1, scale: 1 }}
       className="w-full h-full min-h-screen flex items-center justify-center px-4 py-12"
     >
-      <div className="max-w-md w-full text-center space-y-8">
+      <div className="text-center space-y-8">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}

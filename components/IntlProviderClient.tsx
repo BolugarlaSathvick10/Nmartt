@@ -4,10 +4,11 @@ import React, { useEffect, useState } from "react";
 import { NextIntlClientProvider } from "next-intl";
 
 type Props = { children: React.ReactNode };
+type IntlMessages = Record<string, unknown>;
 
 export default function IntlProviderClient({ children }: Props) {
   const [locale, setLocale] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Record<string, string> | null>(null);
+  const [messages, setMessages] = useState<IntlMessages | null>(null);
 
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("locale") : null;

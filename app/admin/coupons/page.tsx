@@ -132,8 +132,8 @@ export default function CouponsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <motion.div variants={container} initial="hidden" animate="show">
+    <div className="w-full flex flex-col gap-6">
+      <motion.div variants={container} initial="hidden" animate="show" className="w-full space-y-6 min-w-0">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
@@ -151,8 +151,8 @@ export default function CouponsPage() {
           </Button>
         </div>
 
-        <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
-          <div className="overflow-x-auto">
+        <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="min-w-0 overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b bg-gray-50">

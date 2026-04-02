@@ -51,11 +51,9 @@ app/
     profile/      # Profile (mock)
 components/
   ui/             # Button, Input, Card, Dialog, Tabs, Select, etc.
-  sidebar.tsx
   cart-drawer.tsx
   theme-provider.tsx
   theme-toggle.tsx
-  dashboard-layout.tsx
 store/
   auth-store.ts   # Mock login/signup, redirect by role
   cart-store.ts   # Cart items, total

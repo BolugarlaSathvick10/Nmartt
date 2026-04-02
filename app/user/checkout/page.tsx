@@ -26,7 +26,7 @@ const COUPON_CODES: Record<string, number> = {
   "WELCOME5": 0.05,
 };
 
-function CouponBox({ itemsTotal }: { itemsTotal: number }) {
+function CouponBox() {
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +64,6 @@ function CouponBox({ itemsTotal }: { itemsTotal: number }) {
 
 function getDiscountAmount(): number {
   if (typeof document === "undefined") return 0;
-  const couponText = document.querySelector("#checkout-discount")?.textContent ?? "₹0";
   const applied = document.querySelector(".text-green-600")?.textContent ?? "";
   const matches = applied.match(/SAVE\d+|FESTIVE\d+|WELCOME\d+/);
   if (!matches) return 0;
@@ -75,12 +74,6 @@ function getDiscountAmount(): number {
   const items = useCartStore.getState().totalAmount();
   return Math.floor(items * rate);
 }
-
-type CheckoutForm = {
-  address: string;
-  mobile: string;
-  pincode: string;
-};
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -141,7 +134,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0 && !locationValid) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-lg mx-auto space-y-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
         <h1 className="text-2xl font-bold">Checkout</h1>
         <Card className="glass-card border-white/20">
           <CardContent className="py-8 text-center text-muted-foreground">
@@ -153,7 +146,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto space-y-8">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       <h1 className="text-2xl font-bold">Checkout</h1>
 
       <Card className="glass-card border-white/20">
@@ -225,7 +218,7 @@ export default function CheckoutPage() {
         </CardHeader>
         <CardContent>
           {/* Coupon Input */}
-          <CouponBox itemsTotal={totalAmount()} />
+          <CouponBox />
 
           <ul className="space-y-2 mt-4">
             {items.map(({ product, quantity }) => (

@@ -15,9 +15,9 @@ export default function PMDashboardPage() {
         <h1 className="text-2xl font-bold">Product Manager Dashboard</h1>
         <p className="text-muted-foreground">Products and inventory overview</p>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="glass-card border-white/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Products</CardTitle>
               <Package className="h-4 w-4 text-primary" />
@@ -28,7 +28,7 @@ export default function PMDashboardPage() {
           </Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="glass-card border-white/20">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Categories</CardTitle>
               <FolderTree className="h-4 w-4 text-primary" />
@@ -39,7 +39,7 @@ export default function PMDashboardPage() {
           </Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="glass-card border-white/20 border-amber-500/30">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Low / Out of stock</CardTitle>
               <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -51,7 +51,7 @@ export default function PMDashboardPage() {
           </Card>
         </motion.div>
       </div>
-      <Card className="glass-card border-white/20">
+      <Card>
         <CardHeader>
           <CardTitle>Low stock alerts</CardTitle>
         </CardHeader>

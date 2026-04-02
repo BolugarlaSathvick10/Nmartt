@@ -8,36 +8,38 @@ import BackButton from "@/components/BackButton";
 
 export default function AdminCategoriesPage() {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="mb-2">
-            <BackButton />
+    <div className="w-full flex flex-col gap-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-6 min-w-0">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="mb-2">
+              <BackButton />
+            </div>
+            <h1 className="text-2xl font-bold">Categories</h1>
+            <p className="text-sm text-muted-foreground mt-1">Product categories</p>
           </div>
-          <h1 className="text-2xl font-bold">Categories</h1>
-          <p className="text-sm text-muted-foreground mt-1">Product categories</p>
         </div>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {MOCK_CATEGORIES.map((c, i) => (
-          <motion.div
-            key={c.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-          >
-            <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
-              <CardHeader className="pb-2">
-                <FolderTree className="h-8 w-8 text-primary mb-2" />
-                <CardTitle className="text-lg">{c.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{c.productCount} products</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-w-0">
+          {MOCK_CATEGORIES.map((c, i) => (
+            <motion.div
+              key={c.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
+                <CardHeader className="pb-2">
+                  <FolderTree className="h-8 w-8 text-primary mb-2" />
+                  <CardTitle className="text-lg">{c.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">{c.productCount} products</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </div>
   );
 }

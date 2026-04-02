@@ -180,6 +180,17 @@ export function OrderTrackingMap({
             fontWeight: "bold",
             marginBottom: "8px"
           }}>
+            Order: {orderId}
+          </div>
+          <div style={{
+            background: "rgba(0, 0, 0, 0.7)",
+            color: "white",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            fontSize: "12px",
+            fontWeight: "bold",
+            marginBottom: "8px"
+          }}>
             🛒 From: {SHOP_LOCATION.label}
           </div>
           <div style={{
