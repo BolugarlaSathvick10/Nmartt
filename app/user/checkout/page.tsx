@@ -23,28 +23,35 @@ type CheckoutForm = {
   pincode: string;
 };
 
-const COUPON_CODES: Record<string, number> = {
-  "SAVE10": 0.10,
-  "FESTIVE20": 0.20,
-  "WELCOME5": 0.05,
-};
-
-function CouponBox() {
+function CouponBox({ onCouponRateChange }: { onCouponRateChange: (rate: number) => void }) {
   const t = useTranslations();
+  const subtotal = useCartStore((state) => state.totalAmount());
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!coupon.trim()) {
       setError(t("checkout.enterCouponCode"));
+      onCouponRateChange(0);
       return;
     }
-    if (COUPON_CODES[coupon.toUpperCase()]) {
-      setApplied(coupon.toUpperCase());
+
+    const response = await fetch("/api/coupons/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: coupon, subtotal }),
+    });
+
+    if (response.ok) {
+      const data = (await response.json()) as { coupon?: { code: string; discount: number } };
+      setApplied(data.coupon?.code ?? coupon.toUpperCase());
+      onCouponRateChange((data.coupon?.discount ?? 0) / 100);
       setError(null);
     } else {
-      setError(t("checkout.invalidCouponCode"));
+      const data = (await response.json()) as { error?: string };
+      setError(data.error ?? t("checkout.invalidCouponCode"));
+      onCouponRateChange(0);
     }
   };
 
@@ -66,19 +73,6 @@ function CouponBox() {
   );
 }
 
-function getDiscountAmount(): number {
-  if (typeof document === "undefined") return 0;
-  const applied = document.querySelector(".text-green-600")?.textContent ?? "";
-  const matches = applied.match(/SAVE\d+|FESTIVE\d+|WELCOME\d+/);
-  if (!matches) return 0;
-  const code = matches[0];
-  const rate = COUPON_CODES[code];
-  if (!rate) return 0;
-  // Get subtotal from cart
-  const items = useCartStore.getState().totalAmount();
-  return Math.floor(items * rate);
-}
-
 export default function CheckoutPage() {
   const t = useTranslations();
   const locale = useLocale();
@@ -93,6 +87,7 @@ export default function CheckoutPage() {
   const [currentLocationCoords, setCurrentLocationCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [couponDiscountRate, setCouponDiscountRate] = useState(0);
   const form = useForm<CheckoutForm>({
     defaultValues: { address: "123 Main St, Apt 4B", mobile: "9876543210", pincode: "400001" },
   });
@@ -135,6 +130,9 @@ export default function CheckoutPage() {
 
   /** Map user location: from Access location (fixed shop → current location) or from address (fixed shop → address) */
   const userLocationForMap = currentLocationCoords ?? getMockUserLocation(address + " " + pincode);
+  const subtotal = totalAmount();
+  const discountAmount = Math.floor(subtotal * couponDiscountRate);
+  const finalTotal = Math.max(0, subtotal - discountAmount);
 
   const onSubmit = async (data: CheckoutForm) => {
     const payload = {
@@ -246,16 +244,16 @@ export default function CheckoutPage() {
         </CardHeader>
         <CardContent>
           {/* Coupon Input */}
-          <CouponBox />
+          <CouponBox onCouponRateChange={setCouponDiscountRate} />
 
           <ul className="space-y-2 mt-4">
-            {items.map(({ product, quantity, unit }) => (
+            {items.map(({ product, quantity, unit, unitPrice }) => (
               <li key={`${product.id}-${unit}`} className="flex justify-between text-sm gap-3">
                 <span>
                   {localizeProductName(product.name, locale)} × {quantity}
                   <span className="ml-2 text-xs text-muted-foreground">({unit})</span>
                 </span>
-                <span>{formatPrice(product.price * quantity)}</span>
+                <span>{formatPrice(unitPrice * quantity)}</span>
               </li>
             ))}
           </ul>
@@ -263,15 +261,15 @@ export default function CheckoutPage() {
           <div className="mt-4 space-y-2">
             <div className="flex justify-between font-medium">
               <span>{t("checkout.subtotal")}</span>
-              <span>{formatPrice(totalAmount())}</span>
+              <span>{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between font-medium">
               <span>{t("checkout.discount")}</span>
-              <span id="checkout-discount">{formatPrice(getDiscountAmount())}</span>
+              <span id="checkout-discount">{formatPrice(discountAmount)}</span>
             </div>
             <div className="flex justify-between font-semibold text-lg">
               <span>{t("checkout.finalTotal")}</span>
-              <span id="checkout-final">{formatPrice(Math.max(0, totalAmount() - getDiscountAmount()))}</span>
+              <span id="checkout-final">{formatPrice(finalTotal)}</span>
             </div>
           </div>
 

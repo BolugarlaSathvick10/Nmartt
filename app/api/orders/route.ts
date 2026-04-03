@@ -7,22 +7,22 @@ type PlaceOrderInput = {
   userName: string;
   userMobile: string;
   userAddress: string;
-  items: Array<{ product: Product; quantity: number; unit: string }>;
+  items: Array<{ product: Product; quantity: number; unit: string; unitPrice: number }>;
 };
 
 function toOrderItems(items: PlaceOrderInput["items"]) {
-  return items.map(({ product, quantity, unit }) => ({
+  return items.map(({ product, quantity, unit, unitPrice }) => ({
     productId: product.id,
     productName: product.name,
     quantity,
     unit,
-    price: product.price,
+    price: unitPrice,
     image: product.image,
   }));
 }
 
 function calcTotal(items: PlaceOrderInput["items"]) {
-  return items.reduce((sum, row) => sum + row.product.price * row.quantity, 0);
+  return items.reduce((sum, row) => sum + row.unitPrice * row.quantity, 0);
 }
 
 export async function GET() {

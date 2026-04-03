@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ClipboardList, IndianRupee, Truck } from "lucide-react";
+import { ClipboardList, IndianRupee, Save, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { getDataSourceMode, getOrderRepository } from "@/lib/repositories";
+import { getAuthRepository, getDataSourceMode, getOrderRepository } from "@/lib/repositories";
 import { useAuthStore, useOrderStore } from "@/store";
 import { formatPrice } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const mockEarnings = 12500;
 
@@ -18,6 +21,14 @@ export default function DeliveryDashboardPage() {
   const [apiOrders, setApiOrders] = useState<typeof localOrders>([]);
   const isApiMode = dataSourceMode === "api";
   const orders = isApiMode ? apiOrders : localOrders;
+  const [aadhaarNumber, setAadhaarNumber] = useState("");
+  const [drivingLicenseNumber, setDrivingLicenseNumber] = useState("");
+  const [aadhaarImage, setAadhaarImage] = useState("");
+  const [drivingLicenseImage, setDrivingLicenseImage] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
 
   useEffect(() => {
     if (!isApiMode) return;
@@ -53,10 +64,34 @@ export default function DeliveryDashboardPage() {
     };
   }, [isApiMode]);
 
+  useEffect(() => {
+    setAadhaarNumber(user?.aadhaarNumber ?? "");
+    setDrivingLicenseNumber(user?.drivingLicenseNumber ?? "");
+    setAadhaarImage(user?.aadhaarImage ?? "");
+    setDrivingLicenseImage(user?.drivingLicenseImage ?? "");
+    setVehicleNumber(user?.vehicleNumber ?? "");
+    setAddress(user?.address ?? "");
+  }, [user]);
+
   const assignedOrders = orders.filter(
     (o) => o.status !== "delivered" && o.status !== "cancelled" && (o.deliveryBoyName === user?.name || o.status === "pending")
   );
   const deliveredCount = orders.filter((o) => o.status === "delivered" && o.deliveryBoyName === user?.name).length;
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    setProfileMessage("");
+    const result = await getAuthRepository().updateProfile({
+      aadhaarNumber,
+      drivingLicenseNumber,
+      aadhaarImage,
+      drivingLicenseImage,
+      vehicleNumber,
+      address,
+    });
+    setSavingProfile(false);
+    setProfileMessage(result.ok ? "KYC details saved successfully." : result.error ?? "Failed to save profile details.");
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
@@ -105,6 +140,52 @@ export default function DeliveryDashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">{t("dashboards.delivery.quickLinksDesc")}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Delivery Profile & KYC</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label>Aadhaar Number</Label>
+              <Input value={aadhaarNumber} onChange={(event) => setAadhaarNumber(event.target.value)} className="mt-1" placeholder="1234 5678 9012" />
+            </div>
+            <div>
+              <Label>Driving License Number</Label>
+              <Input value={drivingLicenseNumber} onChange={(event) => setDrivingLicenseNumber(event.target.value)} className="mt-1" placeholder="DL-0420110149646" />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label>Aadhaar Image URL</Label>
+              <Input value={aadhaarImage} onChange={(event) => setAadhaarImage(event.target.value)} className="mt-1" placeholder="https://..." />
+            </div>
+            <div>
+              <Label>Driving License Image URL</Label>
+              <Input value={drivingLicenseImage} onChange={(event) => setDrivingLicenseImage(event.target.value)} className="mt-1" placeholder="https://..." />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label>Vehicle Number</Label>
+              <Input value={vehicleNumber} onChange={(event) => setVehicleNumber(event.target.value)} className="mt-1" placeholder="TS09AB1234" />
+            </div>
+            <div>
+              <Label>Address</Label>
+              <Input value={address} onChange={(event) => setAddress(event.target.value)} className="mt-1" placeholder="Current residential address" />
+            </div>
+          </div>
+
+          {profileMessage && (
+            <p className="text-sm text-muted-foreground">{profileMessage}</p>
+          )}
+
+          <Button onClick={() => void handleSaveProfile()} disabled={savingProfile}>
+            <Save className="mr-2 h-4 w-4" /> {savingProfile ? "Saving..." : "Save Details"}
+          </Button>
         </CardContent>
       </Card>
     </motion.div>

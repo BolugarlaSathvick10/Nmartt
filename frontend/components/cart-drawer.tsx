@@ -85,13 +85,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     exit={{ opacity: 0 }}
                     className="space-y-3 p-4"
                   >
-                    {items.map(({ product, quantity, unit }, index) => (
+                    {items.map(({ product, quantity, unit, unitPrice }, index) => (
                       <CartItemCard
                         key={`${product.id}-${unit}`}
                         locale={locale}
                         product={product}
                         quantity={quantity}
                         unit={unit}
+                        unitPrice={unitPrice}
                         onQuantityChange={(newQty) =>
                           updateQuantity(product.id, newQty, unit)
                         }
@@ -242,6 +243,7 @@ function CartItemCard({
   product,
   quantity,
   unit,
+  unitPrice,
   onQuantityChange,
   onRemove,
   index,
@@ -250,6 +252,7 @@ function CartItemCard({
   product: Product;
   quantity: number;
   unit: string;
+  unitPrice: number;
   onQuantityChange: (qty: number) => void;
   onRemove: () => void;
   index: number;
@@ -290,7 +293,7 @@ function CartItemCard({
         </p>
         <div className="flex items-center justify-between mt-2">
           <p className="font-bold text-primary text-sm">
-            {formatPrice(product.price * quantity)}
+            {formatPrice(unitPrice * quantity)}
           </p>
         </div>
       </div>

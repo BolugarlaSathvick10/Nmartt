@@ -9,10 +9,10 @@ type StoredCredential = {
 };
 
 const DEFAULT_USERS: User[] = [
-  { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin", blocked: false },
-  { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm", blocked: false },
-  { id: "db-1", name: "Delivery Boy", email: "delivery@nmart.com", role: "delivery", blocked: false },
-  { id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210", role: "user", blocked: false },
+  { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
+  { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
+  { id: "db-1", name: "Delivery Boy", email: "delivery@nmart.com", role: "delivery", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
+  { id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210", role: "user", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
 ];
 
 const DEFAULT_CREDENTIALS: StoredCredential[] = [
@@ -48,7 +48,16 @@ interface AuthState {
   getAllUsers: () => User[];
   getRecentLoginActivities: (limit?: number) => LoginActivity[];
   clearLoginActivities: (olderThanDays?: number) => void;
-  updateProfile: (updates: { name?: string; mobile?: string }) => { success: boolean; error?: string };
+  updateProfile: (updates: {
+    name?: string;
+    mobile?: string;
+    aadhaarNumber?: string;
+    drivingLicenseNumber?: string;
+    aadhaarImage?: string;
+    drivingLicenseImage?: string;
+    vehicleNumber?: string;
+    address?: string;
+  }) => { success: boolean; error?: string };
 }
 
 function normalizeEmail(email: string): string {
@@ -105,6 +114,8 @@ export const useAuthStore = create<AuthState>()(
           mobile: input.mobile?.trim(),
           role: input.role,
           blocked: false,
+          createdAt: new Date().toISOString(),
+          registrationSource: "admin",
         };
 
         set((state) => ({
@@ -192,7 +203,7 @@ export const useAuthStore = create<AuthState>()(
         const exists = get().credentials.some((item) => item.email === normalizedEmail);
         if (exists) return { success: false, error: "Email already registered" };
 
-        const newUser: User = { id: `u-${Date.now()}`, name, email: normalizedEmail, mobile, role: "user", blocked: false };
+        const newUser: User = { id: `u-${Date.now()}`, name, email: normalizedEmail, mobile, role: "user", blocked: false, createdAt: new Date().toISOString(), registrationSource: "signup" };
 
         set((state) => ({
           users: [newUser, ...state.users],
@@ -250,6 +261,12 @@ export const useAuthStore = create<AuthState>()(
           ...currentUser,
           name: updates.name?.trim() || currentUser.name,
           mobile: updates.mobile?.trim() || currentUser.mobile,
+          aadhaarNumber: updates.aadhaarNumber?.trim() || currentUser.aadhaarNumber,
+          drivingLicenseNumber: updates.drivingLicenseNumber?.trim() || currentUser.drivingLicenseNumber,
+          aadhaarImage: updates.aadhaarImage?.trim() || currentUser.aadhaarImage,
+          drivingLicenseImage: updates.drivingLicenseImage?.trim() || currentUser.drivingLicenseImage,
+          vehicleNumber: updates.vehicleNumber?.trim() || currentUser.vehicleNumber,
+          address: updates.address?.trim() || currentUser.address,
         };
 
         set((state) => ({

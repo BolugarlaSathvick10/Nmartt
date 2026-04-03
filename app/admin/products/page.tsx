@@ -8,7 +8,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCatalogStore } from "@/store";
 import { getCatalogRepository, getDataSourceMode } from "@/lib/repositories";
 import { localizeCategoryName, localizeProductName } from "@/lib/localization";
+import { parseQuantityPricing, serializeQuantityPricing } from "@/lib/product-units";
 import type { Product } from "@/types";
+import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +24,15 @@ import {
 } from "@/components/ui/select";
 
 type ProductForm = Product & { upcoming?: boolean };
+type QuantityPriceRow = { id: string; label: string; price: number };
+
+function makeQuantityPriceRow(label: string, price: number): QuantityPriceRow {
+  return {
+    id: `qp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    label,
+    price,
+  };
+}
 
 export default function AdminProductsPage() {
   const t = useTranslations();
@@ -39,6 +50,8 @@ export default function AdminProductsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [actionError, setActionError] = useState("");
+  const [pricingRows, setPricingRows] = useState<QuantityPriceRow[]>([makeQuantityPriceRow("1 kg", 0)]);
+  const [pricingError, setPricingError] = useState("");
 
   const isApiMode = dataSourceMode === "api";
   const products = isApiMode ? apiProducts : localProducts;
@@ -87,7 +100,7 @@ export default function AdminProductsPage() {
       categoryId: categories[0]?.id ?? "",
       categoryName: "",
       stock: 0,
-      unit: "kg",
+      unit: "1 kg@0",
       createdAt: new Date().toISOString(),
       upcoming: false,
     },
@@ -112,6 +125,8 @@ export default function AdminProductsPage() {
 
   const openAdd = () => {
     setEditingProduct(null);
+    setPricingRows([makeQuantityPriceRow("1 kg", 0)]);
+    setPricingError("");
     form.reset({
       id: `p${Date.now()}`,
       name: "",
@@ -121,7 +136,7 @@ export default function AdminProductsPage() {
       categoryId: categories[0]?.id ?? "",
       categoryName: categories[0]?.name ?? "",
       stock: 0,
-      unit: "1 kg",
+      unit: "1 kg@0",
       createdAt: new Date().toISOString(),
       upcoming: false,
     });
@@ -130,6 +145,10 @@ export default function AdminProductsPage() {
 
   const openEdit = (product: Product) => {
     setEditingProduct(product);
+    setPricingRows(
+      parseQuantityPricing(product.unit, product.price).map((option) => makeQuantityPriceRow(option.label, option.price))
+    );
+    setPricingError("");
     form.reset({ ...product, upcoming: product.upcoming ?? false });
     setModalOpen(true);
   };
@@ -138,11 +157,30 @@ export default function AdminProductsPage() {
     setModalOpen(open);
     if (!open) {
       setEditingProduct(null);
+      setPricingError("");
     }
   };
 
   const saveProduct = async (data: ProductForm) => {
-    const payload: Product = { ...data, upcoming: data.upcoming ?? false };
+    const normalizedPricing = pricingRows
+      .map((row) => ({
+        label: row.label.trim(),
+        price: Number.isFinite(row.price) ? Math.max(0, Math.round(row.price)) : 0,
+      }))
+      .filter((row) => row.label.length > 0);
+
+    if (normalizedPricing.length === 0) {
+      setPricingError("Please add at least one quantity with price.");
+      return;
+    }
+
+    const payload: Product = {
+      ...data,
+      price: normalizedPricing[0].price,
+      unit: serializeQuantityPricing(normalizedPricing),
+      upcoming: data.upcoming ?? false,
+    };
+
     let result: { ok: boolean; error?: string } = { ok: true };
     if (editingProduct) {
       result = await getCatalogRepository().updateProduct(payload);
@@ -155,17 +193,32 @@ export default function AdminProductsPage() {
     }
     if (isApiMode) await loadApiData();
     setActionError("");
+    setPricingError("");
     setModalOpen(false);
   };
 
-  const updatePrice = async (id: string, price: number) => {
-    const result = await getCatalogRepository().updateProductPrice(id, price);
-    if (!result.ok) {
-      setActionError(result.error ?? "You do not have permission to change prices.");
-      return;
-    }
-    if (isApiMode) await loadApiData();
-    setActionError("");
+  const addPricingRow = () => {
+    setPricingRows((prev) => [...prev, makeQuantityPriceRow("", 0)]);
+  };
+
+  const removePricingRow = (rowId: string) => {
+    setPricingRows((prev) => {
+      const next = prev.filter((row) => row.id !== rowId);
+      return next.length > 0 ? next : [makeQuantityPriceRow("", 0)];
+    });
+  };
+
+  const updatePricingRow = (rowId: string, patch: Partial<Omit<QuantityPriceRow, "id">>) => {
+    setPricingRows((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              ...patch,
+            }
+          : row
+      )
+    );
   };
 
   const handleDelete = async (id: string) => {
@@ -272,12 +325,18 @@ export default function AdminProductsPage() {
                       </td>
                       <td className="p-4 text-muted-foreground">{localizeCategoryName(p.categoryName, locale)}</td>
                       <td className="p-4">
-                        <input
-                          type="number"
-                          className="w-24 rounded border bg-background px-2 py-1 text-sm"
-                          value={p.price}
-                          onChange={(e) => void updatePrice(p.id, Number(e.target.value) || 0)}
-                        />
+                        {(() => {
+                          const quantityPricing = parseQuantityPricing(p.unit, p.price);
+                          const startPrice = quantityPricing[0]?.price ?? p.price;
+                          return (
+                            <div>
+                              <p className="font-medium text-gray-900">{formatPrice(startPrice)}</p>
+                              {quantityPricing.length > 1 && (
+                                <p className="text-xs text-muted-foreground">+{quantityPricing.length - 1} more sizes</p>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="p-4">{getStockBadge(p)}</td>
                       <td className="p-4 text-right">
@@ -339,7 +398,7 @@ export default function AdminProductsPage() {
           <div
             role="dialog"
             aria-modal="true"
-            className="relative z-[71] max-h-[85vh] w-[95vw] overflow-y-auto rounded-xl border bg-white p-6 shadow-xl sm:max-w-2xl"
+            className="relative z-[71] w-[95vw] rounded-2xl border border-emerald-100 bg-white/95 p-6 shadow-2xl backdrop-blur-sm sm:max-w-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -350,7 +409,7 @@ export default function AdminProductsPage() {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <form onSubmit={form.handleSubmit(saveProduct)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(saveProduct)} className="max-h-[76vh] space-y-4 overflow-y-auto pr-1">
               <div>
                 <Label>{t("adminProducts.name")}</Label>
                 <Input {...form.register("name", { required: true })} className="mt-1" />
@@ -359,42 +418,73 @@ export default function AdminProductsPage() {
                 <Label>{t("adminProducts.description")}</Label>
                 <Input {...form.register("description")} className="mt-1" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>{t("adminProducts.priceInr")}</Label>
-                  <Input type="number" {...form.register("price", { valueAsNumber: true })} className="mt-1" />
-                </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label>{t("adminProducts.stock")}</Label>
                   <Input type="number" {...form.register("stock", { valueAsNumber: true })} className="mt-1" />
                 </div>
+                <div>
+                  <Label>{t("adminProducts.category")}</Label>
+                  <Select
+                    value={form.watch("categoryId")}
+                    onValueChange={(value) => {
+                      const category = categories.find((c) => c.id === value);
+                      form.setValue("categoryId", value);
+                      if (category) form.setValue("categoryName", category.name);
+                    }}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent side="bottom" align="start" className="z-[120] w-[var(--radix-select-trigger-width)] rounded-xl border border-emerald-100 bg-white shadow-xl">
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{localizeCategoryName(c.name, locale)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div>
-                <Label>Quantity / pack sizes</Label>
-                <Input {...form.register("unit")} className="mt-1" placeholder="1 kg | 500 g | 250 g" />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Use a single value for a fixed pack or separate multiple options with |.
-                </p>
-              </div>
-              <div>
-                <Label>{t("adminProducts.category")}</Label>
-                <Select
-                  value={form.watch("categoryId")}
-                  onValueChange={(value) => {
-                    const category = categories.find((c) => c.id === value);
-                    form.setValue("categoryId", value);
-                    if (category) form.setValue("categoryName", category.name);
-                  }}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="z-[90]">
-                    {categories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{localizeCategoryName(c.name, locale)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mb-2 flex items-center justify-between">
+                  <Label>Quantity and custom price</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addPricingRow}>
+                    <Plus className="mr-1 h-3.5 w-3.5" /> Add option
+                  </Button>
+                </div>
+                <div className="space-y-2 rounded-xl border border-emerald-100 bg-emerald-50/40 p-3">
+                  {pricingRows.map((row) => (
+                    <div key={row.id} className="grid grid-cols-12 gap-2">
+                      <div className="col-span-7">
+                        <Input
+                          value={row.label}
+                          placeholder="e.g. 1 kg, 500 g, 25 g"
+                          onChange={(e) => updatePricingRow(row.id, { label: e.target.value })}
+                        />
+                      </div>
+                      <div className="col-span-4">
+                        <Input
+                          type="number"
+                          min={0}
+                          value={row.price}
+                          placeholder="Price"
+                          onChange={(e) => updatePricingRow(row.id, { price: Number(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div className="col-span-1 flex items-center justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive"
+                          onClick={() => removePricingRow(row.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {pricingError && <p className="mt-1 text-xs text-destructive">{pricingError}</p>}
               </div>
               <div>
                 <Label>{t("adminProducts.imageUrlPreview")}</Label>

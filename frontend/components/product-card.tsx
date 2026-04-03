@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCartStore } from "@/store";
-import { formatProductUnit, parseProductUnits } from "@/lib/product-units";
+import { formatProductUnit, parseQuantityPricing } from "@/lib/product-units";
 
 interface ProductCardProps {
   product: Product;
@@ -20,25 +20,26 @@ interface ProductCardProps {
 
 export function ProductCard({ product, isNew = false }: ProductCardProps) {
   const locale = useLocale();
-  const hasDiscount = product.originalPrice != null;
-  const discountPercent = hasDiscount
-    ? Math.round((1 - product.price / product.originalPrice!) * 100)
-    : 0;
   const localizedProductName = localizeProductName(product.name, locale);
   const localizedCategoryName = localizeCategoryName(product.categoryName, locale);
-  const unitOptions = useMemo(() => parseProductUnits(product.unit), [product.unit]);
-  const [selectedUnit, setSelectedUnit] = useState(unitOptions[0] ?? product.unit);
+  const quantityPricing = useMemo(() => parseQuantityPricing(product.unit, product.price), [product.unit, product.price]);
+  const [selectedUnit, setSelectedUnit] = useState(quantityPricing[0]?.label ?? product.unit);
   const addItem = useCartStore((state) => state.addItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const quantity = useCartStore((state) => state.getItemQuantity(product.id, selectedUnit));
+  const selectedPricing = quantityPricing.find((option) => option.label === selectedUnit) ?? quantityPricing[0];
+  const hasQuantityPricing = quantityPricing.length > 1;
+  const hasDiscount = product.originalPrice != null && !hasQuantityPricing;
+  const discountPercent = hasDiscount
+    ? Math.round((1 - (selectedPricing?.price ?? product.price) / product.originalPrice!) * 100)
+    : 0;
 
   useEffect(() => {
-    if (!unitOptions.includes(selectedUnit)) {
-      setSelectedUnit(unitOptions[0] ?? product.unit);
+    const labels = quantityPricing.map((option) => option.label);
+    if (!labels.includes(selectedUnit)) {
+      setSelectedUnit(quantityPricing[0]?.label ?? product.unit);
     }
-  }, [product.unit, selectedUnit, unitOptions]);
-
-  const hasUnitOptions = unitOptions.length > 1;
+  }, [product.unit, quantityPricing, selectedUnit]);
 
   return (
     <motion.div
@@ -98,7 +99,7 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
           <div className="flex items-center justify-between mt-3 mb-3">
             <div className="flex items-baseline gap-2">
               <span className="font-bold text-lg text-primary">
-                {formatPrice(product.price)}
+                {formatPrice(selectedPricing?.price ?? product.price)}
               </span>
               {hasDiscount && (
                 <span className="text-xs text-muted-foreground line-through">
@@ -112,15 +113,15 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               Quantity
             </p>
-            {hasUnitOptions ? (
+            {hasQuantityPricing ? (
               <Select value={selectedUnit} onValueChange={setSelectedUnit}>
                 <SelectTrigger className="h-8 rounded-md text-xs">
                   <SelectValue placeholder="Choose quantity" />
                 </SelectTrigger>
-                <SelectContent className="z-[90]">
-                  {unitOptions.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                      {formatProductUnit(unit)}
+                <SelectContent className="z-[100] w-[var(--radix-select-trigger-width)] rounded-xl border border-emerald-100 shadow-xl">
+                  {quantityPricing.map((option) => (
+                    <SelectItem key={option.label} value={option.label}>
+                      {formatProductUnit(option.label)} - {formatPrice(option.price)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -138,7 +139,7 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
               <Button
                 size="sm"
                 className="w-full bg-gradient-to-r from-primary to-primary/90 shadow-none hover:shadow-none hover:from-primary hover:to-primary/95 transition-colors duration-200 text-white font-medium focus-visible:ring-offset-0"
-                onClick={() => addItem(product, 1, selectedUnit)}
+                onClick={() => addItem(product, 1, selectedUnit, selectedPricing?.price ?? product.price)}
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Add to Cart

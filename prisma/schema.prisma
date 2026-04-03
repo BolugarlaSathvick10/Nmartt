@@ -93,6 +93,13 @@ model User {
   role            UserRole
   avatar          String?
   blocked         Boolean         @default(false)
+  registrationSource String?      
+  aadhaarNumber   String?
+  drivingLicenseNumber String?
+  aadhaarImage    String?
+  drivingLicenseImage String?
+  vehicleNumber   String?
+  address         String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   loginActivities LoginActivity[]

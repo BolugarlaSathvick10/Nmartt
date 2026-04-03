@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Copy, Check, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -15,46 +15,46 @@ interface UserCoupon {
   id: string;
   code: string;
   discount: number;
-  description: string;
   minOrder: number;
   expiryDate: string;
-  used: boolean;
+  active: boolean;
 }
-
-const AVAILABLE_COUPONS: UserCoupon[] = [
-  {
-    id: "c1",
-    code: "SAVE10",
-    discount: 10,
-    description: "couponDescSave10",
-    minOrder: 500,
-    expiryDate: "2026-12-31",
-    used: false,
-  },
-  {
-    id: "c2",
-    code: "FESTIVE20",
-    discount: 20,
-    description: "couponDescFestive20",
-    minOrder: 1000,
-    expiryDate: "2026-03-31",
-    used: false,
-  },
-  {
-    id: "c3",
-    code: "FRESH5",
-    discount: 5,
-    description: "couponDescFresh5",
-    minOrder: 100,
-    expiryDate: "2025-12-31",
-    used: true,
-  },
-];
 
 export default function UserCouponsPage() {
   const t = useTranslations();
-  const [coupons] = useState<UserCoupon[]>(AVAILABLE_COUPONS);
+  const [coupons, setCoupons] = useState<UserCoupon[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  const loadCoupons = async () => {
+    const response = await fetch("/api/coupons", { cache: "no-store" });
+    if (!response.ok) return;
+    const rows = (await response.json()) as Array<{
+      id: string;
+      code: string;
+      discount: number;
+      minOrder: number;
+      expiryDate: string;
+      active: boolean;
+    }>;
+    setCoupons(
+      rows.map((row) => ({
+        id: row.id,
+        code: row.code,
+        discount: row.discount,
+        minOrder: row.minOrder,
+        expiryDate: row.expiryDate,
+        active: row.active,
+      }))
+    );
+  };
+
+  useEffect(() => {
+    void loadCoupons();
+    const timer = setInterval(() => {
+      void loadCoupons();
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -62,8 +62,12 @@ export default function UserCouponsPage() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const activeCoupons = coupons.filter((c) => !c.used);
-  const usedCoupons = coupons.filter((c) => c.used);
+  const activeCoupons = coupons.filter(
+    (coupon) => coupon.active && new Date(`${coupon.expiryDate}T23:59:59`).getTime() >= Date.now()
+  );
+  const usedCoupons = coupons.filter(
+    (coupon) => !coupon.active || new Date(`${coupon.expiryDate}T23:59:59`).getTime() < Date.now()
+  );
 
   return (
     <div className="space-y-6">
@@ -91,7 +95,7 @@ export default function UserCouponsPage() {
                             </div>
                             <div>
                               <h3 className="text-lg font-bold text-gray-900">{coupon.discount}% {t("coupons.off")}</h3>
-                              <p className="text-sm text-gray-600">{t(`coupons.${coupon.description}`)}</p>
+                              <p className="text-sm text-gray-600">Use this coupon at checkout for instant discount.</p>
                             </div>
                           </div>
                           <div className="mt-3 text-xs text-gray-500 space-y-1">
@@ -152,7 +156,7 @@ export default function UserCouponsPage() {
                             </div>
                             <div>
                               <h3 className="text-lg font-bold text-gray-600">{coupon.discount}% {t("coupons.off")}</h3>
-                              <p className="text-sm text-gray-500">{t(`coupons.${coupon.description}`)}</p>
+                              <p className="text-sm text-gray-500">Not currently usable for checkout.</p>
                             </div>
                           </div>
                           <div className="mt-3 text-xs text-gray-500 space-y-1">

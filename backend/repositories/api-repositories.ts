@@ -184,7 +184,16 @@ class ApiAuthRepository implements AuthRepository {
     return parseResult(response, "Failed to clear login activities");
   }
 
-  async updateProfile(updates: { name?: string; mobile?: string }) {
+  async updateProfile(updates: {
+    name?: string;
+    mobile?: string;
+    aadhaarNumber?: string;
+    drivingLicenseNumber?: string;
+    aadhaarImage?: string;
+    drivingLicenseImage?: string;
+    vehicleNumber?: string;
+    address?: string;
+  }) {
     const response = await fetch("/api/users/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...authHeaders() },

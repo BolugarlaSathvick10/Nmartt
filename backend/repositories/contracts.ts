@@ -24,7 +24,7 @@ export type PlaceOrderInput = {
   userName: string;
   userMobile: string;
   userAddress: string;
-  items: Array<{ product: Product; quantity: number; unit: string }>;
+  items: Array<{ product: Product; quantity: number; unit: string; unitPrice: number }>;
 };
 
 export interface CatalogRepository {
@@ -51,7 +51,16 @@ export interface AuthRepository {
     password: string,
     mobile?: string
   ): Promise<{ ok: boolean; user?: User; error?: string }>;
-  updateProfile(updates: { name?: string; mobile?: string }): Promise<MutationResult>;
+  updateProfile(updates: {
+    name?: string;
+    mobile?: string;
+    aadhaarNumber?: string;
+    drivingLicenseNumber?: string;
+    aadhaarImage?: string;
+    drivingLicenseImage?: string;
+    vehicleNumber?: string;
+    address?: string;
+  }): Promise<MutationResult>;
 }
 
 export interface OrderRepository {

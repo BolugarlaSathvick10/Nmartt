@@ -8,6 +8,14 @@ export interface User {
   role: UserRole;
   avatar?: string;
   blocked?: boolean;
+  createdAt?: string;
+  registrationSource?: "signup" | "admin" | "seed" | "legacy";
+  aadhaarNumber?: string;
+  drivingLicenseNumber?: string;
+  aadhaarImage?: string;
+  drivingLicenseImage?: string;
+  vehicleNumber?: string;
+  address?: string;
 }
 
 export type AuthMethod = "password" | "otp" | "signup";
@@ -98,6 +106,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   unit: string;
+  unitPrice: number;
 }
 
 export interface DashboardStats {

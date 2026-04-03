@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, Settings, BarChart3, ClipboardList, History, Home, Boxes, Ticket, LogOut, HelpCircle, FileText, LifeBuoy, Menu } from "lucide-react";
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, Settings, BarChart3, ClipboardList, History, Home, Boxes, Ticket, LogOut, HelpCircle, FileText, LifeBuoy, Menu, BellRing } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -26,6 +26,7 @@ const adminNav: NavItem[] = [
 	{ href: "/admin/product-analytics", labelKey: "sidebar.productAnalytics", icon: BarChart3 },
 	{ href: "/admin/audit", labelKey: "sidebar.audit", icon: ClipboardList },
 	{ href: "/admin/coupons", labelKey: "sidebar.coupons", icon: Ticket },
+	{ href: "/admin/notification-pusher", labelKey: "sidebar.notificationPusher", icon: BellRing },
 	{ href: "/admin/orders", labelKey: "sidebar.orders", icon: ShoppingCart },
 	{ href: "/admin/users", labelKey: "sidebar.users", icon: Users },
 	{ href: "/admin/delivery", labelKey: "sidebar.delivery", icon: Truck },

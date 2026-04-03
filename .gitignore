@@ -8,3 +8,5 @@ out
 .env.production
 .DS_Store
 Thumbs.db
+tsconfig.tsbuildinfo
+.nmart-runtime-store.json

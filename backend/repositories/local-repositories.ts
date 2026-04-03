@@ -106,7 +106,16 @@ class LocalAuthRepository implements AuthRepository {
     return { ok: true };
   }
 
-  async updateProfile(updates: { name?: string; mobile?: string }) {
+  async updateProfile(updates: {
+    name?: string;
+    mobile?: string;
+    aadhaarNumber?: string;
+    drivingLicenseNumber?: string;
+    aadhaarImage?: string;
+    drivingLicenseImage?: string;
+    vehicleNumber?: string;
+    address?: string;
+  }) {
     const result = useAuthStore.getState().updateProfile(updates);
     return {
       ok: result.success,

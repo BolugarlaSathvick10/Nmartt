@@ -1,6 +1,8 @@
 import { createStarterCatalog } from "@/lib/catalog-seed";
 import { MOCK_ORDERS, MOCK_USERS } from "@/lib/mock-data";
 import { prisma } from "@/lib/prisma";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import type { Prisma } from "@prisma/client";
 import type {
   AuthMethod,
@@ -22,10 +24,10 @@ type ProductMutationResult = {
 const starterCatalog = createStarterCatalog();
 
 const DEFAULT_USERS: User[] = [
-  { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin", blocked: false },
-  { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm", blocked: false },
-  { id: "db-1", name: "Delivery Boy", email: "delivery@nmart.com", role: "delivery", blocked: false },
-  { id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210", role: "user", blocked: false },
+  { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
+  { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
+  { id: "db-1", name: "Delivery Boy", email: "delivery@nmart.com", role: "delivery", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
+  { id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210", role: "user", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
   ...MOCK_USERS.filter((user) => user.id !== "u1"),
 ];
 
@@ -40,6 +42,103 @@ const DEFAULT_ORDER_DELIVERY = {
   deliveryBoyId: "db-1",
   deliveryBoyName: "Delivery Boy",
 };
+
+type CouponRecord = {
+  id: string;
+  code: string;
+  discount: number;
+  minOrder: number;
+  expiryDate: string;
+  active: boolean;
+  usageCount: number;
+  createdAt: string;
+};
+
+type NotificationType = "festival" | "offer" | "coupon" | "info";
+
+type ServerNotification = {
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  createdAt: string;
+  createdByUserId?: string;
+  targetRoles: UserRole[];
+};
+
+const DEFAULT_COUPONS: CouponRecord[] = [
+  {
+    id: "c1",
+    code: "SAVE10",
+    discount: 10,
+    minOrder: 500,
+    expiryDate: "2026-12-31",
+    active: true,
+    usageCount: 245,
+    createdAt: "2025-01-01T00:00:00.000Z",
+  },
+  {
+    id: "c2",
+    code: "FESTIVE20",
+    discount: 20,
+    minOrder: 1000,
+    expiryDate: "2026-12-31",
+    active: true,
+    usageCount: 512,
+    createdAt: "2025-01-01T00:00:00.000Z",
+  },
+  {
+    id: "c3",
+    code: "WELCOME5",
+    discount: 5,
+    minOrder: 100,
+    expiryDate: "2026-12-31",
+    active: true,
+    usageCount: 89,
+    createdAt: "2025-01-01T00:00:00.000Z",
+  },
+];
+
+let couponRecords: CouponRecord[] = [...DEFAULT_COUPONS];
+let notificationRecords: ServerNotification[] = [];
+let notificationReadsByUser: Record<string, string[]> = {};
+let runtimeStoreLoaded = false;
+
+const RUNTIME_STORE_FILE = path.join(process.cwd(), ".nmart-runtime-store.json");
+
+type RuntimeStore = {
+  coupons: CouponRecord[];
+  notifications: ServerNotification[];
+  notificationReadsByUser: Record<string, string[]>;
+};
+
+async function loadRuntimeStore() {
+  if (runtimeStoreLoaded) return;
+
+  try {
+    const raw = await fs.readFile(RUNTIME_STORE_FILE, "utf-8");
+    const parsed = JSON.parse(raw) as Partial<RuntimeStore>;
+    couponRecords = parsed.coupons && parsed.coupons.length > 0 ? parsed.coupons : [...DEFAULT_COUPONS];
+    notificationRecords = parsed.notifications ?? [];
+    notificationReadsByUser = parsed.notificationReadsByUser ?? {};
+  } catch {
+    couponRecords = [...DEFAULT_COUPONS];
+    notificationRecords = [];
+    notificationReadsByUser = {};
+  }
+
+  runtimeStoreLoaded = true;
+}
+
+async function saveRuntimeStore() {
+  const payload: RuntimeStore = {
+    coupons: couponRecords,
+    notifications: notificationRecords,
+    notificationReadsByUser,
+  };
+
+  await fs.writeFile(RUNTIME_STORE_FILE, JSON.stringify(payload, null, 2), "utf-8");
+}
 
 let seedPromise: Promise<void> | null = null;
 
@@ -102,6 +201,14 @@ function toUser(record: {
   role: UserRole;
   avatar: string | null;
   blocked: boolean;
+  createdAt: Date;
+  registrationSource?: string | null;
+  aadhaarNumber?: string | null;
+  drivingLicenseNumber?: string | null;
+  aadhaarImage?: string | null;
+  drivingLicenseImage?: string | null;
+  vehicleNumber?: string | null;
+  address?: string | null;
 }): User {
   return {
     id: record.id,
@@ -111,6 +218,14 @@ function toUser(record: {
     role: record.role,
     avatar: record.avatar ?? undefined,
     blocked: record.blocked,
+    createdAt: record.createdAt.toISOString(),
+    registrationSource: (record.registrationSource as User["registrationSource"]) ?? "legacy",
+    aadhaarNumber: record.aadhaarNumber ?? undefined,
+    drivingLicenseNumber: record.drivingLicenseNumber ?? undefined,
+    aadhaarImage: record.aadhaarImage ?? undefined,
+    drivingLicenseImage: record.drivingLicenseImage ?? undefined,
+    vehicleNumber: record.vehicleNumber ?? undefined,
+    address: record.address ?? undefined,
   };
 }
 
@@ -237,6 +352,14 @@ async function ensureUserSeed() {
       role: user.role,
       avatar: user.avatar ?? null,
       blocked: user.blocked ?? false,
+        createdAt: user.createdAt ? new Date(user.createdAt) : new Date(),
+        registrationSource: user.registrationSource ?? "seed",
+        aadhaarNumber: user.aadhaarNumber ?? null,
+        drivingLicenseNumber: user.drivingLicenseNumber ?? null,
+        aadhaarImage: user.aadhaarImage ?? null,
+        drivingLicenseImage: user.drivingLicenseImage ?? null,
+        vehicleNumber: user.vehicleNumber ?? null,
+        address: user.address ?? null,
     })),
   });
 }
@@ -319,6 +442,14 @@ function canDelete(role: UserRole | null) {
 
 function canAdminOnly(role: UserRole | null) {
   return role === "admin";
+}
+
+function normalizeCouponCode(code: string) {
+  return code.trim().toUpperCase();
+}
+
+function isCouponExpired(expiryDate: string) {
+  return new Date(`${expiryDate}T23:59:59`).getTime() < Date.now();
 }
 
 function slugify(value: string): string {
@@ -426,6 +557,8 @@ export async function createManagedUser(
       email: normalizedEmail,
       mobile: input.mobile?.trim() || null,
       role: input.role,
+      registrationSource: "admin",
+      createdAt: new Date(),
     },
   });
 
@@ -532,6 +665,8 @@ export async function signupUser(name: string, email: string, password: string, 
       mobile: mobile?.trim() || null,
       role: "user",
       blocked: false,
+      registrationSource: "signup",
+      createdAt: new Date(),
     },
   });
 
@@ -555,7 +690,19 @@ export async function signupUser(name: string, email: string, password: string, 
   return { ok: true as const, user: toUser(user) };
 }
 
-export async function updateUserProfile(userId: string, updates: { name?: string; mobile?: string }) {
+export async function updateUserProfile(
+  userId: string,
+  updates: {
+    name?: string;
+    mobile?: string;
+    aadhaarNumber?: string;
+    drivingLicenseNumber?: string;
+    aadhaarImage?: string;
+    drivingLicenseImage?: string;
+    vehicleNumber?: string;
+    address?: string;
+  }
+) {
   await ensureAuthSeeded();
 
   const existing = await prisma.user.findUnique({ where: { id: userId } });
@@ -566,6 +713,12 @@ export async function updateUserProfile(userId: string, updates: { name?: string
     data: {
       name: updates.name?.trim() || existing.name,
       mobile: updates.mobile?.trim() || existing.mobile,
+      aadhaarNumber: updates.aadhaarNumber?.trim() || existing.aadhaarNumber,
+      drivingLicenseNumber: updates.drivingLicenseNumber?.trim() || existing.drivingLicenseNumber,
+      aadhaarImage: updates.aadhaarImage?.trim() || existing.aadhaarImage,
+      drivingLicenseImage: updates.drivingLicenseImage?.trim() || existing.drivingLicenseImage,
+      vehicleNumber: updates.vehicleNumber?.trim() || existing.vehicleNumber,
+      address: updates.address?.trim() || existing.address,
     },
   });
 
@@ -764,6 +917,176 @@ export async function updateOrderStatus(role: UserRole | null, orderId: string, 
     },
   });
 
+  return { ok: true } as const;
+}
+
+export async function getCoupons() {
+  await loadRuntimeStore();
+  return [...couponRecords].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
+
+export async function createCoupon(
+  role: UserRole | null,
+  input: { code: string; discount: number; minOrder: number; expiryDate: string; active?: boolean }
+) {
+  await loadRuntimeStore();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+
+  const code = normalizeCouponCode(input.code);
+  if (!code || !input.expiryDate) return { ok: false, error: "Coupon code and expiry date are required" } as const;
+
+  const exists = couponRecords.some((coupon) => coupon.code === code);
+  if (exists) return { ok: false, error: "Coupon already exists" } as const;
+
+  const created: CouponRecord = {
+    id: `c-${Date.now()}`,
+    code,
+    discount: Math.max(1, Math.round(input.discount)),
+    minOrder: Math.max(0, Math.round(input.minOrder)),
+    expiryDate: input.expiryDate,
+    active: input.active ?? true,
+    usageCount: 0,
+    createdAt: new Date().toISOString(),
+  };
+
+  couponRecords = [created, ...couponRecords];
+  await saveRuntimeStore();
+  return { ok: true, coupon: created } as const;
+}
+
+export async function updateCoupon(
+  role: UserRole | null,
+  couponId: string,
+  input: { code: string; discount: number; minOrder: number; expiryDate: string; active?: boolean }
+) {
+  await loadRuntimeStore();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+
+  const code = normalizeCouponCode(input.code);
+  if (!code || !input.expiryDate) return { ok: false, error: "Coupon code and expiry date are required" } as const;
+
+  const duplicate = couponRecords.some((coupon) => coupon.id !== couponId && coupon.code === code);
+  if (duplicate) return { ok: false, error: "Coupon already exists" } as const;
+
+  const existing = couponRecords.find((coupon) => coupon.id === couponId);
+  if (!existing) return { ok: false, error: "Coupon not found" } as const;
+
+  couponRecords = couponRecords.map((coupon) =>
+    coupon.id === couponId
+      ? {
+          ...coupon,
+          code,
+          discount: Math.max(1, Math.round(input.discount)),
+          minOrder: Math.max(0, Math.round(input.minOrder)),
+          expiryDate: input.expiryDate,
+          active: input.active ?? coupon.active,
+        }
+      : coupon
+  );
+
+  await saveRuntimeStore();
+  return { ok: true } as const;
+}
+
+export async function deleteCoupon(role: UserRole | null, couponId: string) {
+  await loadRuntimeStore();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+  couponRecords = couponRecords.filter((coupon) => coupon.id !== couponId);
+  await saveRuntimeStore();
+  return { ok: true } as const;
+}
+
+export async function toggleCoupon(role: UserRole | null, couponId: string) {
+  await loadRuntimeStore();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+  couponRecords = couponRecords.map((coupon) =>
+    coupon.id === couponId ? { ...coupon, active: !coupon.active } : coupon
+  );
+  await saveRuntimeStore();
+  return { ok: true } as const;
+}
+
+export async function validateCoupon(code: string, subtotal: number) {
+  await loadRuntimeStore();
+  const normalized = normalizeCouponCode(code);
+  const coupon = couponRecords.find((item) => item.code === normalized);
+  if (!coupon) return { ok: false, error: "Invalid coupon code" } as const;
+  if (!coupon.active || isCouponExpired(coupon.expiryDate)) {
+    return { ok: false, error: "Invalid coupon code" } as const;
+  }
+  if (subtotal < coupon.minOrder) {
+    return { ok: false, error: `Minimum order amount is ${coupon.minOrder}` } as const;
+  }
+  return { ok: true, coupon } as const;
+}
+
+export async function pushNotification(
+  role: UserRole | null,
+  actorUserId: string | null,
+  input: { title: string; message: string; type: NotificationType; targetRoles?: UserRole[] }
+) {
+  await loadRuntimeStore();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+
+  const title = input.title.trim();
+  const message = input.message.trim();
+  if (!title || !message) return { ok: false, error: "Title and message are required" } as const;
+
+  const targetRoles = input.targetRoles && input.targetRoles.length > 0 ? input.targetRoles : ["user"];
+  const notification: ServerNotification = {
+    id: `noti-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    title,
+    message,
+    type: input.type,
+    createdAt: new Date().toISOString(),
+    createdByUserId: actorUserId ?? undefined,
+    targetRoles,
+  };
+
+  notificationRecords = [notification, ...notificationRecords].slice(0, 500);
+  await saveRuntimeStore();
+  return { ok: true, notification } as const;
+}
+
+export async function getNotificationsForUser(userId: string | null, role: UserRole | null) {
+  await loadRuntimeStore();
+  if (!userId || !role) {
+    return { notifications: [], readIds: [] };
+  }
+
+  const notifications =
+    role === "admin"
+      ? notificationRecords
+      : notificationRecords.filter((notification) => notification.targetRoles.includes(role));
+
+  const readIds = notificationReadsByUser[userId] ?? [];
+  return { notifications, readIds };
+}
+
+export async function markNotificationRead(userId: string | null, notificationId: string) {
+  await loadRuntimeStore();
+  if (!userId) return { ok: false, error: "Unauthorized" } as const;
+  const existing = notificationReadsByUser[userId] ?? [];
+  if (!existing.includes(notificationId)) {
+    notificationReadsByUser[userId] = [notificationId, ...existing].slice(0, 1000);
+    await saveRuntimeStore();
+  }
+  return { ok: true } as const;
+}
+
+export async function markAllNotificationsRead(userId: string | null, role: UserRole | null) {
+  await loadRuntimeStore();
+  if (!userId || !role) return { ok: false, error: "Unauthorized" } as const;
+
+  const ids = (role === "admin"
+    ? notificationRecords
+    : notificationRecords.filter((notification) => notification.targetRoles.includes(role))
+  ).map((notification) => notification.id);
+
+  notificationReadsByUser[userId] = ids;
+  await saveRuntimeStore();
   return { ok: true } as const;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Trash2, Plus, Edit, Power, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -8,16 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
-const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+import { X } from "lucide-react";
+import { useAuthStore } from "@/store";
 
 interface Coupon {
   id: string;
@@ -29,39 +21,13 @@ interface Coupon {
   usageCount: number;
 }
 
-const MOCK_COUPONS: Coupon[] = [
-  {
-    id: "c1",
-    code: "SAVE10",
-    discount: 10,
-    minOrder: 500,
-    expiryDate: "2026-12-31",
-    active: true,
-    usageCount: 245,
-  },
-  {
-    id: "c2",
-    code: "FESTIVE20",
-    discount: 20,
-    minOrder: 1000,
-    expiryDate: "2026-03-31",
-    active: true,
-    usageCount: 512,
-  },
-  {
-    id: "c3",
-    code: "WELCOME5",
-    discount: 5,
-    minOrder: 0,
-    expiryDate: "2025-12-31",
-    active: false,
-    usageCount: 89,
-  },
-];
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function CouponsPage() {
   const t = useTranslations();
-  const [coupons, setCoupons] = useState<Coupon[]>(MOCK_COUPONS);
+  const user = useAuthStore((state) => state.user);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [formData, setFormData] = useState<Partial<Coupon>>({
@@ -71,6 +37,23 @@ export default function CouponsPage() {
     expiryDate: "",
     active: true,
   });
+
+  const authHeaders = {
+    "Content-Type": "application/json",
+    ...(user?.role ? { "x-user-role": user.role } : {}),
+    ...(user?.id ? { "x-user-id": user.id } : {}),
+  };
+
+  const loadCoupons = async () => {
+    const response = await fetch("/api/coupons", { cache: "no-store" });
+    if (!response.ok) return;
+    const rows = (await response.json()) as Coupon[];
+    setCoupons(rows);
+  };
+
+  useEffect(() => {
+    void loadCoupons();
+  }, []);
 
   const handleOpenAdd = () => {
     setEditingCoupon(null);
@@ -90,47 +73,77 @@ export default function CouponsPage() {
     setModalOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.code || !formData.expiryDate) {
       alert(t("adminCoupons.fillAllFields"));
       return;
     }
 
     if (editingCoupon) {
-      setCoupons((prev) =>
-        prev.map((c) =>
-          c.id === editingCoupon.id
-            ? { ...c, ...formData, code: formData.code!, expiryDate: formData.expiryDate! }
-            : c
-        )
-      );
+      const response = await fetch(`/api/coupons/${editingCoupon.id}`, {
+        method: "PUT",
+        headers: authHeaders,
+        body: JSON.stringify({
+          code: formData.code,
+          discount: formData.discount || 10,
+          minOrder: formData.minOrder || 0,
+          expiryDate: formData.expiryDate,
+          active: formData.active ?? true,
+        }),
+      });
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        alert(data.error ?? "Failed to update coupon.");
+        return;
+      }
     } else {
-      const newCoupon: Coupon = {
-        id: `c${Date.now()}`,
-        code: formData.code!,
-        discount: formData.discount || 10,
-        minOrder: formData.minOrder || 0,
-        expiryDate: formData.expiryDate!,
-        active: formData.active ?? true,
-        usageCount: 0,
-      };
-      setCoupons((prev) => [newCoupon, ...prev]);
+      const response = await fetch("/api/coupons", {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({
+          code: formData.code,
+          discount: formData.discount || 10,
+          minOrder: formData.minOrder || 0,
+          expiryDate: formData.expiryDate,
+          active: formData.active ?? true,
+        }),
+      });
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        alert(data.error ?? "Failed to create coupon.");
+        return;
+      }
     }
+    await loadCoupons();
     setModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm(t("adminCoupons.deleteConfirm"))) {
-      setCoupons((prev) => prev.filter((c) => c.id !== id));
+      const response = await fetch(`/api/coupons/${id}`, {
+        method: "DELETE",
+        headers: authHeaders,
+      });
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        alert(data.error ?? "Failed to delete coupon.");
+        return;
+      }
+      await loadCoupons();
     }
   };
 
-  const handleToggle = (id: string) => {
-    setCoupons((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, active: !c.active } : c
-      )
-    );
+  const handleToggle = async (id: string) => {
+    const response = await fetch(`/api/coupons/${id}/toggle`, {
+      method: "PATCH",
+      headers: authHeaders,
+    });
+    if (!response.ok) {
+      const data = (await response.json()) as { error?: string };
+      alert(data.error ?? "Failed to update coupon status.");
+      return;
+    }
+    await loadCoupons();
   };
 
   return (
@@ -253,105 +266,121 @@ export default function CouponsPage() {
         </Card>
       </motion.div>
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="bg-white rounded-xl border border-gray-200">
-          <DialogHeader>
-            <DialogTitle className="text-gray-900">
-              {editingCoupon ? t("adminCoupons.editCoupon") : t("adminCoupons.createNewCoupon")}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.couponCode")}</Label>
-              <Input
-                placeholder={t("adminCoupons.couponCodePlaceholder")}
-                value={formData.code || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))
-                }
-                className="mt-2 border border-gray-200 rounded-lg px-3 py-2"
-              />
+      {modalOpen && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Close coupon backdrop"
+            className="absolute inset-0 bg-black/55 backdrop-blur-sm"
+            onClick={() => setModalOpen(false)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-[81] w-[95vw] max-h-[88vh] overflow-y-auto rounded-2xl border border-emerald-100 bg-white p-6 shadow-2xl sm:max-w-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {editingCoupon ? t("adminCoupons.editCoupon") : t("adminCoupons.createNewCoupon")}
+              </h2>
+              <Button type="button" variant="ghost" size="icon" onClick={() => setModalOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4 pb-1">
               <div>
-                <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.discountPercent")}</Label>
+                <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.couponCode")}</Label>
                 <Input
-                  type="number"
-                  placeholder="10"
-                  value={formData.discount || ""}
+                  placeholder={t("adminCoupons.couponCodePlaceholder")}
+                  value={formData.code || ""}
                   onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      discount: Number(e.target.value),
-                    }))
+                    setFormData((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))
                   }
                   className="mt-2 border border-gray-200 rounded-lg px-3 py-2"
                 />
               </div>
 
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.discountPercent")}</Label>
+                  <Input
+                    type="number"
+                    placeholder="10"
+                    value={formData.discount || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        discount: Number(e.target.value),
+                      }))
+                    }
+                    className="mt-2 border border-gray-200 rounded-lg px-3 py-2"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.minOrderInr")}</Label>
+                  <Input
+                    type="number"
+                    placeholder="500"
+                    value={formData.minOrder || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        minOrder: Number(e.target.value),
+                      }))
+                    }
+                    className="mt-2 border border-gray-200 rounded-lg px-3 py-2"
+                  />
+                </div>
+              </div>
+
               <div>
-                <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.minOrderInr")}</Label>
+                <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.expiryDate")}</Label>
                 <Input
-                  type="number"
-                  placeholder="500"
-                  value={formData.minOrder || ""}
+                  type="date"
+                  value={formData.expiryDate || ""}
                   onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      minOrder: Number(e.target.value),
-                    }))
+                    setFormData((prev) => ({ ...prev, expiryDate: e.target.value }))
                   }
                   className="mt-2 border border-gray-200 rounded-lg px-3 py-2"
                 />
               </div>
+
+              <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
+                <input
+                  type="checkbox"
+                  checked={formData.active ?? true}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, active: e.target.checked }))
+                  }
+                  className="rounded border-gray-200"
+                />
+                <label className="text-sm text-gray-700">
+                  {formData.active ? t("adminCoupons.active") : t("adminCoupons.inactive")}
+                </label>
+              </div>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium text-gray-900">{t("adminCoupons.expiryDate")}</Label>
-              <Input
-                type="date"
-                value={formData.expiryDate || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, expiryDate: e.target.value }))
-                }
-                className="mt-2 border border-gray-200 rounded-lg px-3 py-2"
-              />
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                checked={formData.active ?? true}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, active: e.target.checked }))
-                }
-                className="rounded border-gray-200"
-              />
-              <label className="text-sm text-gray-700">
-                {formData.active ? t("adminCoupons.active") : t("adminCoupons.inactive")}
-              </label>
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setModalOpen(false)}
+                className="border border-gray-200"
+              >
+                {t("adminCoupons.cancel")}
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {editingCoupon ? t("adminCoupons.update") : t("adminCoupons.create")}
+              </Button>
             </div>
           </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setModalOpen(false)}
-              className="border border-gray-200"
-            >
-              {t("adminCoupons.cancel")}
-            </Button>
-            <Button
-              onClick={handleSave}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              {editingCoupon ? t("adminCoupons.update") : t("adminCoupons.create")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }

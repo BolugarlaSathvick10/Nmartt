@@ -2,13 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem, Product } from "@/types";
 import { useAuthStore } from "@/store/auth-store";
-import { formatProductUnit, parseProductUnits } from "@/lib/product-units";
+import { formatProductUnit, getUnitPrice, parseProductUnits } from "@/lib/product-units";
 
 interface CartState {
   items: CartItem[];
   cartsByUser: Record<string, CartItem[]>;
   syncForCurrentUser: () => void;
-  addItem: (product: Product, quantity?: number, unit?: string) => void;
+  addItem: (product: Product, quantity?: number, unit?: string, unitPrice?: number) => void;
   removeItem: (productId: string, unit?: string) => void;
   updateQuantity: (productId: string, quantity: number, unit?: string) => void;
   clearCart: () => void;
@@ -25,10 +25,20 @@ function normalizeUnit(product: Product, unit?: string) {
   return formatProductUnit(unit ?? parseProductUnits(product.unit)[0] ?? product.unit);
 }
 
+function normalizeUnitPrice(product: Product, unit: string, unitPrice?: number) {
+  if (typeof unitPrice === "number" && Number.isFinite(unitPrice)) {
+    return Math.max(0, Math.round(unitPrice));
+  }
+
+  return getUnitPrice(product.unit, product.price, unit);
+}
+
 function normalizeCartItem(item: CartItem): CartItem {
+  const unit = normalizeUnit(item.product, item.unit);
   return {
     ...item,
-    unit: normalizeUnit(item.product, item.unit),
+    unit,
+    unitPrice: normalizeUnitPrice(item.product, unit, item.unitPrice),
   };
 }
 
@@ -46,17 +56,20 @@ export const useCartStore = create<CartState>()(
         const nextItems = normalizeCartItems(get().cartsByUser[key] ?? []);
         set({ items: nextItems });
       },
-      addItem: (product: Product, quantity = 1, unit?: string) => {
+      addItem: (product: Product, quantity = 1, unit?: string, unitPrice?: number) => {
         set((state) => {
           const key = getCartKey();
           const currentItems = normalizeCartItems(state.cartsByUser[key] ?? []);
           const selectedUnit = normalizeUnit(product, unit);
+          const selectedUnitPrice = normalizeUnitPrice(product, selectedUnit, unitPrice);
           const existing = currentItems.find((i) => i.product.id === product.id && i.unit === selectedUnit);
           const nextItems = existing
             ? currentItems.map((i) =>
-                i.product.id === product.id && i.unit === selectedUnit ? { ...i, quantity: i.quantity + quantity } : i
+                i.product.id === product.id && i.unit === selectedUnit
+                  ? { ...i, quantity: i.quantity + quantity, unitPrice: selectedUnitPrice }
+                  : i
               )
-            : [...currentItems, { product, quantity, unit: selectedUnit }];
+            : [...currentItems, { product, quantity, unit: selectedUnit, unitPrice: selectedUnitPrice }];
 
           return {
             items: nextItems,
@@ -104,7 +117,7 @@ export const useCartStore = create<CartState>()(
         }),
       totalItems: () => get().items.reduce((s, i) => s + i.quantity, 0),
       totalAmount: () =>
-        get().items.reduce((s, i) => s + i.product.price * i.quantity, 0),
+        get().items.reduce((s, i) => s + i.unitPrice * i.quantity, 0),
       getItemQuantity: (productId: string, unit?: string) => {
         const selectedUnit = unit ? formatProductUnit(unit) : undefined;
         return (
