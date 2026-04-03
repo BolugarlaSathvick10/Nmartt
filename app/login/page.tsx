@@ -4,11 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, Phone, User as UserIcon, Loader2 } from "lucide-react";
+import { Mail, Lock, Phone, User, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/store";
 import { getAuthRepository, getDataSourceMode } from "@/lib/repositories";
-import type { User } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +41,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const isSuccessfulResult = (result: { ok?: boolean; success?: boolean }) =>
+    result.ok ?? result.success ?? false;
+
   const translateAuthError = (message?: string) => {
     if (!message) return "";
     if (message === "Invalid email or password") return t("auth.invalidEmailOrPassword");
@@ -53,8 +55,6 @@ export default function LoginPage() {
   const signupForm = useForm<SignupForm>({ defaultValues: { name: "", email: "", password: "", mobile: "", otp: "" } });
   const otpForm = useForm<OTPForm>({ defaultValues: { mobile: "", otp: "" } });
 
-  const isSuccess = (result: { success?: boolean; ok?: boolean }) => Boolean(result.success ?? result.ok);
-
   const onLogin = async (data: LoginForm) => {
     setError("");
     setLoading(true);
@@ -64,15 +64,15 @@ export default function LoginPage() {
         ? await getAuthRepository().login(data.email, data.password)
         : login(data.email, data.password);
     setLoading(false);
-    if (isSuccess(result)) {
+    if (isSuccessfulResult(result as { ok?: boolean; success?: boolean })) {
       const user = (result as { user?: { id?: string; name?: string; email?: string; role?: string; mobile?: string } }).user;
       if (user) {
         useAuthStore.setState({
-          user: user as User,
+          user: user as any,
           isAuthenticated: true,
         });
       }
-      const redirect = (result as { redirect?: string }).redirect ?? (result as { success?: boolean; redirect?: string }).redirect;
+      const redirect = (result as { redirect?: string }).redirect;
       router.push(redirect || "/");
     } else {
       setError(translateAuthError((result as { error?: string }).error) || t("auth.loginFailed"));
@@ -80,7 +80,6 @@ export default function LoginPage() {
   };
 
   const onLoginOTP = async () => {
-    setError("");
     if (!otpSent) {
       setOtpSent(true);
       return;
@@ -90,12 +89,13 @@ export default function LoginPage() {
     // Mock OTP: any 6 digits works. Redirect as user for demo.
     const result = login("user@nmart.com", "user123");
     setLoading(false);
-    if (result.success && result.redirect) router.push(result.redirect);
+    if (isSuccessfulResult(result as { ok?: boolean; success?: boolean }) && result.redirect) {
+      router.push(result.redirect);
+    }
     else setError(t("auth.invalidOtp"));
   };
 
   const onSignup = async (data: SignupForm) => {
-    setError("");
     if (!signupOtpSent && data.mobile) {
       setSignupOtpSent(true);
       return;
@@ -107,11 +107,11 @@ export default function LoginPage() {
         ? await getAuthRepository().signup(data.name, data.email, data.password, data.mobile)
         : signup(data.name, data.email, data.password, data.mobile);
     setLoading(false);
-    if (isSuccess(result)) {
+    if (isSuccessfulResult(result as { ok?: boolean; success?: boolean })) {
       const user = (result as { user?: { id?: string; name?: string; email?: string; role?: string; mobile?: string } }).user;
       if (user) {
         useAuthStore.setState({
-          user: user as User,
+          user: user as any,
           isAuthenticated: true,
         });
       }
@@ -263,7 +263,7 @@ export default function LoginPage() {
                   <div>
                     <Label>{t("auth.name")}</Label>
                     <div className="relative mt-1">
-                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input placeholder={t("auth.fullName")} className="pl-10" {...signupForm.register("name", { required: true })} />
                     </div>
                   </div>

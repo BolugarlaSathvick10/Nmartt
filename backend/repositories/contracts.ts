@@ -6,6 +6,7 @@ import type {
   Product,
   ProductActivity,
   User,
+  UserRole,
 } from "@/types";
 
 export type MutationResult = {
@@ -23,11 +24,12 @@ export type PlaceOrderInput = {
   userName: string;
   userMobile: string;
   userAddress: string;
-  items: Array<{ product: Product; quantity: number }>;
+  items: Array<{ product: Product; quantity: number; unit: string }>;
 };
 
 export interface CatalogRepository {
   getSnapshot(): Promise<CatalogSnapshot>;
+  createCategory(category: { name: string; image?: string }): Promise<MutationResult>;
   createProduct(product: Product): Promise<MutationResult>;
   updateProduct(product: Product): Promise<MutationResult>;
   updateProductPrice(productId: string, price: number): Promise<MutationResult>;
@@ -40,6 +42,8 @@ export interface AuthRepository {
   getUsers(): Promise<User[]>;
   getLoginActivities(limit?: number): Promise<LoginActivity[]>;
   clearLoginActivities(olderThanDays?: number): Promise<MutationResult>;
+  createUserAccount(input: { name: string; email: string; password: string; role: UserRole; mobile?: string }): Promise<{ ok: boolean; user?: User; error?: string }>;
+  setUserAccess(userId: string, blocked: boolean): Promise<MutationResult>;
   login(email: string, password: string): Promise<{ ok: boolean; user?: User; redirect?: string; error?: string }>;
   signup(
     name: string,

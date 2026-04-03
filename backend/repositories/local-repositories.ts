@@ -25,6 +25,11 @@ class LocalCatalogRepository implements CatalogRepository {
     };
   }
 
+  async createCategory(category: { name: string; image?: string }) {
+    const ok = useCatalogStore.getState().addCategory(category);
+    return toResult(ok, "Not authorized to create category");
+  }
+
   async createProduct(product: Product) {
     const ok = useCatalogStore.getState().addProduct(product);
     return toResult(ok, "Not authorized to create product");
@@ -58,6 +63,16 @@ class LocalCatalogRepository implements CatalogRepository {
 class LocalAuthRepository implements AuthRepository {
   async getUsers() {
     return useAuthStore.getState().users;
+  }
+
+  async createUserAccount(input: { name: string; email: string; password: string; role: "admin" | "pm" | "delivery" | "user"; mobile?: string }) {
+    const result = useAuthStore.getState().createManagedUser(input);
+    return result.ok ? { ok: true, user: result.user } : { ok: false, error: result.error };
+  }
+
+  async setUserAccess(userId: string, blocked: boolean) {
+    const result = useAuthStore.getState().setUserAccess(userId, blocked);
+    return result.ok ? { ok: true } : { ok: false, error: result.error };
   }
 
   async login(email: string, password: string) {

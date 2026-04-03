@@ -1,10 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
@@ -18,19 +16,6 @@ export default function AdminSettingsPage() {
           <h1 className="text-2xl font-bold">{t("adminSettings.title")}</h1>
           <p className="text-muted-foreground">{t("adminSettings.subtitle")}</p>
         </div>
-        <Card className="glass-card border-white/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" /> {t("adminSettings.appearance")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <Label>{t("adminSettings.theme")}</Label>
-              <ThemeToggle />
-            </div>
-          </CardContent>
-        </Card>
         <Card className="glass-card border-white/20">
           <CardHeader>
             <CardTitle>{t("adminSettings.storeDetails")}</CardTitle>

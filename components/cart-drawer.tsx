@@ -51,7 +51,6 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -62,7 +61,6 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             aria-hidden="true"
           />
 
-          {/* Drawer Container - Full Height, No Gap */}
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -70,10 +68,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed top-0 right-0 z-50 h-screen w-full sm:w-96 bg-background shadow-2xl shadow-black/20 flex flex-col border-l"
           >
-            {/* Header - Fixed */}
             <CartHeader t={t} onClose={onClose} cartItemsCount={totalItems()} />
 
-            {/* Content - Scrollable Middle Section */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
               <div className="pb-40">
                 {items.length === 0 ? (
@@ -104,7 +100,6 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               </div>
             </div>
 
-            {/* Footer - Fixed Bottom */}
             {items.length > 0 && (
               <CartFooter
                 t={t}
@@ -124,7 +119,6 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   return createPortal(cartContent, document.body);
 }
 
-// `t` is passed from CartDrawer to avoid duplicate hooks
 function CartHeader({
   t,
   onClose,
@@ -182,7 +176,6 @@ function CartFooter({
       transition={{ delay: 0.15, duration: 0.3 }}
       className="border-t bg-gradient-to-t from-background via-background to-background/95 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] p-6 space-y-4 flex-shrink-0"
     >
-      {/* Total Row */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -202,7 +195,6 @@ function CartFooter({
         </motion.span>
       </motion.div>
 
-      {/* Items Count */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -212,11 +204,7 @@ function CartFooter({
         {totalItems} {t("cart.items")}{totalItems !== 1 ? "s" : ""} in your cart
       </motion.div>
 
-      {/* Checkout Button */}
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
         <Button
           onClick={onCheckout}
           className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-semibold text-base rounded-xl shadow-lg shadow-primary/30 transition-all duration-300"
@@ -225,7 +213,6 @@ function CartFooter({
         </Button>
       </motion.div>
 
-      {/* Continue Shopping */}
       <Button
         variant="ghost"
         onClick={onContinueShopping}
@@ -265,7 +252,6 @@ function CartItemCard({
       whileHover={{ y: -2 }}
       className="flex items-center gap-4 rounded-xl border border-white/10 bg-card/50 p-3 hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
     >
-      {/* Product Image */}
       <motion.div
         whileHover={{ scale: 1.05 }}
         className="h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-muted to-muted/50"
@@ -277,7 +263,6 @@ function CartItemCard({
         />
       </motion.div>
 
-      {/* Product Info */}
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-sm text-foreground line-clamp-2 leading-snug">
           {localizedProductName}
@@ -295,9 +280,7 @@ function CartItemCard({
         </div>
       </div>
 
-      {/* Quantity Controls & Delete */}
       <div className="flex flex-col items-center gap-2">
-        {/* Quantity Selector */}
         <motion.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
@@ -327,7 +310,6 @@ function CartItemCard({
           </motion.button>
         </motion.div>
 
-        {/* Delete Button */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}

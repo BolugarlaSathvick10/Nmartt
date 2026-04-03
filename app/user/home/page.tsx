@@ -6,7 +6,7 @@ import { Search, ShoppingCart } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { getCatalogRepository, getDataSourceMode } from "@/lib/repositories";
 import { localizeCategoryName, localizeProductName } from "@/lib/localization";
-import { useCatalogStore, useCartStore, useUpcomingStore, useUIStore } from "@/store";
+import { useCatalogStore, useUpcomingStore, useUIStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { CartDrawer } from "@/components/cart-drawer";
 import { HorizontalProductScroll } from "@/components/horizontal-product-scroll";
@@ -49,10 +49,6 @@ export default function UserHomePage() {
     };
   }, [isApiMode, localProducts, localCategories]);
 
-  const addItem = useCartStore((s) => s.addItem);
-  const items = useCartStore((s) => s.items);
-  const updateQuantity = useCartStore((s) => s.updateQuantity);
-  
   const cartOpen = useUIStore((s) => s.cartOpen);
   const setCartOpen = useUIStore((s) => s.setCartOpen);
 
@@ -81,9 +77,6 @@ export default function UserHomePage() {
 
     return list;
   }, [regularProducts, search, categoryFilter, locale]);
-
-  const inCart = (id: string) => items.find((i) => i.product.id === id);
-  const getQty = (id: string) => inCart(id)?.quantity ?? 0;
 
   const hasSearchResults = search.length > 0;
 
@@ -142,10 +135,6 @@ export default function UserHomePage() {
                   <ProductCard
                     key={p.id}
                     product={p}
-                    quantity={getQty(p.id)}
-                    onAdd={() => addItem(p)}
-                    onIncrease={() => updateQuantity(p.id, getQty(p.id) + 1)}
-                    onDecrease={() => updateQuantity(p.id, Math.max(0, getQty(p.id) - 1))}
                   />
                 ))}
               </div>
@@ -224,10 +213,6 @@ export default function UserHomePage() {
                     <ProductCard
                       key={p.id}
                       product={p}
-                      quantity={getQty(p.id)}
-                      onAdd={() => addItem(p)}
-                      onIncrease={() => updateQuantity(p.id, getQty(p.id) + 1)}
-                      onDecrease={() => updateQuantity(p.id, Math.max(0, getQty(p.id) - 1))}
                     />
                   ))}
                 </div>

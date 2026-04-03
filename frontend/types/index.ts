@@ -7,6 +7,7 @@ export interface User {
   mobile?: string;
   role: UserRole;
   avatar?: string;
+  blocked?: boolean;
 }
 
 export type AuthMethod = "password" | "otp" | "signup";
@@ -73,6 +74,7 @@ export interface OrderItem {
   productId: string;
   productName: string;
   quantity: number;
+  unit?: string;
   price: number;
   image: string;
 }
@@ -95,6 +97,7 @@ export interface Order {
 export interface CartItem {
   product: Product;
   quantity: number;
+  unit: string;
 }
 
 export interface DashboardStats {

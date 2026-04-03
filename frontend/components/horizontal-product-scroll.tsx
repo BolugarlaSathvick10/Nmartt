@@ -149,7 +149,7 @@ export function HorizontalProductScroll({
                     <Button
                       size="sm"
                       variant={isInterested(product.id) ? "outline" : "default"}
-                      className="w-full text-xs gap-1 h-8 font-medium"
+                      className="w-full text-xs gap-1 h-8 font-medium shadow-none hover:shadow-none focus-visible:ring-offset-0"
                       onClick={() => onNotifyMe(product.id)}
                     >
                       <Bell className="h-3 w-3" />

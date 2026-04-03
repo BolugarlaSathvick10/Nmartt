@@ -62,7 +62,7 @@ export default function UserOrdersPage() {
     };
   }, [isApiMode]);
 
-  const myOrders = allOrders.filter((o) => o.userId === user?.id || o.userName === user?.name);
+  const myOrders = allOrders.filter((o) => o.userId === user?.id);
   const trackingOrder = trackingOrderId ? myOrders.find((o) => o.id === trackingOrderId) : null;
 
   const statusSteps = [

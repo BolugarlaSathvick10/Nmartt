@@ -249,9 +249,12 @@ export default function CheckoutPage() {
           <CouponBox />
 
           <ul className="space-y-2 mt-4">
-            {items.map(({ product, quantity }) => (
-              <li key={product.id} className="flex justify-between text-sm">
-                <span>{localizeProductName(product.name, locale)} × {quantity}</span>
+            {items.map(({ product, quantity, unit }) => (
+              <li key={`${product.id}-${unit}`} className="flex justify-between text-sm gap-3">
+                <span>
+                  {localizeProductName(product.name, locale)} × {quantity}
+                  <span className="ml-2 text-xs text-muted-foreground">({unit})</span>
+                </span>
                 <span>{formatPrice(product.price * quantity)}</span>
               </li>
             ))}

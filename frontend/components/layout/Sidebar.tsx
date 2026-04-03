@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, Settings, BarChart3, ClipboardList, History, Home, Boxes, Ticket, LogOut, HelpCircle, FileText, LifeBuoy, Menu } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { useAuthStore, useUIStore } from "@/store";
@@ -139,7 +138,6 @@ export function Sidebar() {
         <div className={cn("flex items-center", sidebarOpen ? "justify-between gap-2" : "justify-start") }>
           {sidebarOpen && <LanguageSwitcher />}
           <div className={cn("flex items-center gap-2", !sidebarOpen && "flex-col") }>
-            <ThemeToggle />
             <Button variant="ghost" size={sidebarOpen ? "sm" : "icon"} onClick={logout}>
               {!sidebarOpen && <LogOut className="h-4 w-4" />}
               {sidebarOpen ? t("sidebar.logout") : null}

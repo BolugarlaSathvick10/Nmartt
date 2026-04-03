@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCatalogStore } from "@/store";
 import { getCatalogRepository, getDataSourceMode } from "@/lib/repositories";
@@ -13,13 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -71,6 +64,19 @@ export default function AdminProductsPage() {
     void loadApiData();
   }, [isApiMode]);
 
+  useEffect(() => {
+    if (!modalOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        handleModalOpenChange(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [modalOpen]);
+
   const form = useForm<ProductForm>({
     defaultValues: {
       id: "",
@@ -111,11 +117,11 @@ export default function AdminProductsPage() {
       name: "",
       description: "",
       price: 0,
-      image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=400&fit=crop",
+      image: "",
       categoryId: categories[0]?.id ?? "",
       categoryName: categories[0]?.name ?? "",
       stock: 0,
-      unit: "kg",
+      unit: "1 kg",
       createdAt: new Date().toISOString(),
       upcoming: false,
     });
@@ -126,6 +132,13 @@ export default function AdminProductsPage() {
     setEditingProduct(product);
     form.reset({ ...product, upcoming: product.upcoming ?? false });
     setModalOpen(true);
+  };
+
+  const handleModalOpenChange = (open: boolean) => {
+    setModalOpen(open);
+    if (!open) {
+      setEditingProduct(null);
+    }
   };
 
   const saveProduct = async (data: ProductForm) => {
@@ -315,70 +328,95 @@ export default function AdminProductsPage() {
         </Card>
       </motion.div>
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="w-full">
-          <DialogHeader>
-            <DialogTitle>{editingProduct ? t("adminProducts.editProduct") : t("adminProducts.addProduct")}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={form.handleSubmit(saveProduct)} className="space-y-4">
-            <div>
-              <Label>{t("adminProducts.name")}</Label>
-              <Input {...form.register("name", { required: true })} className="mt-1" />
+      {modalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Close modal backdrop"
+            className="absolute inset-0 bg-black/55 backdrop-blur-sm"
+            onClick={() => handleModalOpenChange(false)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-[71] max-h-[85vh] w-[95vw] overflow-y-auto rounded-xl border bg-white p-6 shadow-xl sm:max-w-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {editingProduct ? t("adminProducts.editProduct") : t("adminProducts.addProduct")}
+              </h2>
+              <Button type="button" variant="ghost" size="icon" onClick={() => handleModalOpenChange(false)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <div>
-              <Label>{t("adminProducts.description")}</Label>
-              <Input {...form.register("description")} className="mt-1" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={form.handleSubmit(saveProduct)} className="space-y-4">
               <div>
-                <Label>{t("adminProducts.priceInr")}</Label>
-                <Input type="number" {...form.register("price", { valueAsNumber: true })} className="mt-1" />
+                <Label>{t("adminProducts.name")}</Label>
+                <Input {...form.register("name", { required: true })} className="mt-1" />
               </div>
               <div>
-                <Label>{t("adminProducts.stock")}</Label>
-                <Input type="number" {...form.register("stock", { valueAsNumber: true })} className="mt-1" />
+                <Label>{t("adminProducts.description")}</Label>
+                <Input {...form.register("description")} className="mt-1" />
               </div>
-            </div>
-            <div>
-              <Label>{t("adminProducts.category")}</Label>
-              <Select
-                value={form.watch("categoryId")}
-                onValueChange={(value) => {
-                  const category = categories.find((c) => c.id === value);
-                  form.setValue("categoryId", value);
-                  if (category) form.setValue("categoryName", category.name);
-                }}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{localizeCategoryName(c.name, locale)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{t("adminProducts.imageUrlPreview")}</Label>
-              <Input {...form.register("image")} className="mt-1" />
-              {form.watch("image") && (
-                <div className="mt-2 h-24 w-24 rounded-lg border overflow-hidden bg-muted">
-                  <img src={form.watch("image")} alt="" className="h-full w-full object-cover" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t("adminProducts.priceInr")}</Label>
+                  <Input type="number" {...form.register("price", { valueAsNumber: true })} className="mt-1" />
                 </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="upcoming" {...form.register("upcoming")} className="rounded border" />
-              <Label htmlFor="upcoming">{t("adminProducts.upcomingProductNotify")}</Label>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>{t("adminProducts.cancel")}</Button>
-              <Button type="submit">{t("adminProducts.save")}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+                <div>
+                  <Label>{t("adminProducts.stock")}</Label>
+                  <Input type="number" {...form.register("stock", { valueAsNumber: true })} className="mt-1" />
+                </div>
+              </div>
+              <div>
+                <Label>Quantity / pack sizes</Label>
+                <Input {...form.register("unit")} className="mt-1" placeholder="1 kg | 500 g | 250 g" />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Use a single value for a fixed pack or separate multiple options with |.
+                </p>
+              </div>
+              <div>
+                <Label>{t("adminProducts.category")}</Label>
+                <Select
+                  value={form.watch("categoryId")}
+                  onValueChange={(value) => {
+                    const category = categories.find((c) => c.id === value);
+                    form.setValue("categoryId", value);
+                    if (category) form.setValue("categoryName", category.name);
+                  }}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[90]">
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{localizeCategoryName(c.name, locale)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{t("adminProducts.imageUrlPreview")}</Label>
+                <Input {...form.register("image")} className="mt-1" />
+                {form.watch("image") && (
+                  <div className="mt-2 h-24 w-24 rounded-lg border overflow-hidden bg-muted">
+                    <img src={form.watch("image")} alt="" className="h-full w-full object-cover" />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="upcoming" {...form.register("upcoming")} className="rounded border" />
+                <Label htmlFor="upcoming">{t("adminProducts.upcomingProductNotify")}</Label>
+              </div>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <Button type="button" variant="outline" onClick={() => handleModalOpenChange(false)}>{t("adminProducts.cancel")}</Button>
+                <Button type="submit">{t("adminProducts.save")}</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

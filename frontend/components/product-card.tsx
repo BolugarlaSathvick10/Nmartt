@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Minus } from "lucide-react";
 import { useLocale } from "next-intl";
@@ -8,24 +9,16 @@ import { localizeCategoryName, localizeProductName } from "@/lib/localization";
 import type { Product } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCartStore } from "@/store";
+import { formatProductUnit, parseProductUnits } from "@/lib/product-units";
 
 interface ProductCardProps {
   product: Product;
-  quantity: number;
-  onAdd: () => void;
-  onIncrease: () => void;
-  onDecrease: () => void;
   isNew?: boolean;
 }
 
-export function ProductCard({
-  product,
-  quantity,
-  onAdd,
-  onIncrease,
-  onDecrease,
-  isNew = false,
-}: ProductCardProps) {
+export function ProductCard({ product, isNew = false }: ProductCardProps) {
   const locale = useLocale();
   const hasDiscount = product.originalPrice != null;
   const discountPercent = hasDiscount
@@ -33,6 +26,19 @@ export function ProductCard({
     : 0;
   const localizedProductName = localizeProductName(product.name, locale);
   const localizedCategoryName = localizeCategoryName(product.categoryName, locale);
+  const unitOptions = useMemo(() => parseProductUnits(product.unit), [product.unit]);
+  const [selectedUnit, setSelectedUnit] = useState(unitOptions[0] ?? product.unit);
+  const addItem = useCartStore((state) => state.addItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const quantity = useCartStore((state) => state.getItemQuantity(product.id, selectedUnit));
+
+  useEffect(() => {
+    if (!unitOptions.includes(selectedUnit)) {
+      setSelectedUnit(unitOptions[0] ?? product.unit);
+    }
+  }, [product.unit, selectedUnit, unitOptions]);
+
+  const hasUnitOptions = unitOptions.length > 1;
 
   return (
     <motion.div
@@ -44,11 +50,11 @@ export function ProductCard({
     >
       <Card className="glass-card border-white/20 overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
         {/* Image Section */}
-        <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-muted to-muted/50">
+        <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 sm:h-52">
           <img
             src={product.image}
             alt={localizedProductName}
-            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="block h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
 
           {/* Badges */}
@@ -74,8 +80,6 @@ export function ProductCard({
             )}
           </div>
 
-          {/* Overlay Shadow on Hover */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
         </div>
 
         {/* Content Section */}
@@ -104,13 +108,37 @@ export function ProductCard({
             </div>
           </div>
 
+          <div className="mb-3 space-y-1.5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Quantity
+            </p>
+            {hasUnitOptions ? (
+              <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+                <SelectTrigger className="h-8 rounded-md text-xs">
+                  <SelectValue placeholder="Choose quantity" />
+                </SelectTrigger>
+                <SelectContent className="z-[90]">
+                  {unitOptions.map((unit) => (
+                    <SelectItem key={unit} value={unit}>
+                      {formatProductUnit(unit)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary">
+                {formatProductUnit(selectedUnit)}
+              </div>
+            )}
+          </div>
+
           {/* Action Button */}
           {quantity === 0 ? (
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg shadow-primary/20 transition-all duration-300 text-white font-medium"
-                onClick={onAdd}
+                className="w-full bg-gradient-to-r from-primary to-primary/90 shadow-none hover:shadow-none hover:from-primary hover:to-primary/95 transition-colors duration-200 text-white font-medium focus-visible:ring-offset-0"
+                onClick={() => addItem(product, 1, selectedUnit)}
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Add to Cart
@@ -124,8 +152,8 @@ export function ProductCard({
             >
               <motion.button
                 whileTap={{ scale: 0.85 }}
-                onClick={onDecrease}
-                className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-primary/20 transition-colors"
+                onClick={() => updateQuantity(product.id, Math.max(0, quantity - 1), selectedUnit)}
+                className="flex h-7 w-7 items-center justify-center rounded-md bg-transparent hover:bg-primary/15 transition-colors"
               >
                 <Minus className="h-3.5 w-3.5 text-primary" />
               </motion.button>
@@ -139,8 +167,8 @@ export function ProductCard({
               </motion.span>
               <motion.button
                 whileTap={{ scale: 0.85 }}
-                onClick={onIncrease}
-                className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-primary/20 transition-colors"
+                onClick={() => updateQuantity(product.id, quantity + 1, selectedUnit)}
+                className="flex h-7 w-7 items-center justify-center rounded-md bg-transparent hover:bg-primary/15 transition-colors"
               >
                 <Plus className="h-3.5 w-3.5 text-primary" />
               </motion.button>

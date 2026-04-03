@@ -88,6 +88,18 @@ export function generateProducts(): Product[] {
   let globalIndex = 0;
   const createdAt = "2024-01-01T10:00:00Z";
 
+  const unitMap: Record<string, string> = {
+    "cat-1": "1 kg | 500 g | 250 g",
+    "cat-2": "1 L | 500 ml | 250 ml",
+    "cat-3": "1 pack | 2 pack | 4 pack",
+    "cat-4": "1 L | 500 ml | 250 ml",
+    "cat-5": "1 pack | 2 pack | 4 pack",
+    "cat-6": "1 kg | 500 g | 250 g",
+    "cat-7": "1 pc | 2 pc | 4 pc",
+    "cat-8": "1 pc | 2 pc | 4 pc",
+    "cat-9": "1 kg | 500 g | 250 g",
+  };
+
   CATEGORIES.forEach((cat) => {
     const names = NAMES_BY_CATEGORY[cat.id] ?? [];
     const count = Math.max(55, names.length);
@@ -105,7 +117,7 @@ export function generateProducts(): Product[] {
         categoryId: cat.id,
         categoryName: cat.name,
         stock: 50 + (i % 80),
-        unit: i % 3 === 0 ? "kg" : i % 3 === 1 ? "pack" : "pc",
+        unit: unitMap[cat.id] ?? "1 pc",
         createdAt,
         upcoming: false,
       });

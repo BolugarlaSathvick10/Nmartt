@@ -39,6 +39,15 @@ class ApiCatalogRepository implements CatalogRepository {
     return response.json();
   }
 
+  async createCategory(category: { name: string; image?: string }) {
+    const response = await fetch("/api/catalog/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify(category),
+    });
+    return parseResult(response, "Failed to create category");
+  }
+
   async createProduct(product: Product) {
     const response = await fetch("/api/catalog/products", {
       method: "POST",
@@ -99,6 +108,31 @@ class ApiAuthRepository implements AuthRepository {
       throw new Error("Failed to fetch users");
     }
     return response.json();
+  }
+
+  async createUserAccount(input: { name: string; email: string; password: string; role: "admin" | "pm" | "delivery" | "user"; mobile?: string }) {
+    const response = await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify(input),
+    });
+
+    if (!response.ok) {
+      const failed = await parseResult(response, "Failed to create user account");
+      return { ok: false, error: failed.error };
+    }
+
+    const data = (await response.json()) as { user?: unknown };
+    return { ok: true, user: data.user as any };
+  }
+
+  async setUserAccess(userId: string, blocked: boolean) {
+    const response = await fetch(`/api/users/${userId}/access`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ blocked }),
+    });
+    return parseResult(response, "Failed to update user access");
   }
 
   async login(email: string, password: string) {

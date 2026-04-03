@@ -8,6 +8,7 @@ type CatalogState = {
   categories: Category[];
   products: Product[];
   productActivities: ProductActivity[];
+  addCategory: (category: { name: string; image?: string }) => boolean;
   addProduct: (product: Product) => boolean;
   updateProduct: (product: Product) => boolean;
   updatePrice: (productId: string, price: number) => boolean;
@@ -30,6 +31,14 @@ function recalculateCategories(categories: Category[], products: Product[]): Cat
     ...category,
     productCount: counts[category.id] ?? 0,
   }));
+}
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "category";
 }
 
 function normalizeProduct(product: Product): Product {
@@ -73,12 +82,40 @@ function canDeleteCatalogItem() {
   return getActorRole() === "admin";
 }
 
+function canCreateCategory() {
+  return getActorRole() === "admin";
+}
+
 export const useCatalogStore: UseBoundStore<StoreApi<CatalogState>> = create<CatalogState>()(
   persist<CatalogState>(
     (set) => ({
       categories: starterCatalog.categories,
       products: starterCatalog.products,
       productActivities: [],
+      addCategory: (category) => {
+        if (!canCreateCategory()) return false;
+        const name = category.name.trim();
+        if (!name) return false;
+
+        const baseSlug = slugify(name);
+        const state = useCatalogStore.getState();
+        const slugExists = state.categories.some((item) => item.slug === baseSlug || item.name.toLowerCase() === name.toLowerCase());
+        if (slugExists) return false;
+
+        const nextCategory: Category = {
+          id: `cat-${Date.now()}`,
+          name,
+          slug: baseSlug,
+          image: category.image?.trim() || undefined,
+          productCount: 0,
+        };
+
+        set((current) => ({
+          categories: [nextCategory, ...current.categories],
+        }));
+
+        return true;
+      },
       addProduct: (product) => {
         if (!canMutateCatalog()) return false;
         const normalized = normalizeProduct(product);

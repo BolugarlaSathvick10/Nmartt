@@ -22,10 +22,10 @@ type ProductMutationResult = {
 const starterCatalog = createStarterCatalog();
 
 const DEFAULT_USERS: User[] = [
-  { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin" },
-  { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm" },
-  { id: "db-1", name: "Delivery Boy", email: "delivery@nmart.com", role: "delivery" },
-  { id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210", role: "user" },
+  { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin", blocked: false },
+  { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm", blocked: false },
+  { id: "db-1", name: "Delivery Boy", email: "delivery@nmart.com", role: "delivery", blocked: false },
+  { id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210", role: "user", blocked: false },
   ...MOCK_USERS.filter((user) => user.id !== "u1"),
 ];
 
@@ -101,6 +101,7 @@ function toUser(record: {
   mobile: string | null;
   role: UserRole;
   avatar: string | null;
+  blocked: boolean;
 }): User {
   return {
     id: record.id,
@@ -109,6 +110,7 @@ function toUser(record: {
     mobile: record.mobile ?? undefined,
     role: record.role,
     avatar: record.avatar ?? undefined,
+    blocked: record.blocked,
   };
 }
 
@@ -234,6 +236,7 @@ async function ensureUserSeed() {
       mobile: user.mobile ?? null,
       role: user.role,
       avatar: user.avatar ?? null,
+      blocked: user.blocked ?? false,
     })),
   });
 }
@@ -314,6 +317,18 @@ function canDelete(role: UserRole | null) {
   return role === "admin";
 }
 
+function canAdminOnly(role: UserRole | null) {
+  return role === "admin";
+}
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "category";
+}
+
 export async function getCatalogSnapshot() {
   await ensureSeeded();
 
@@ -326,6 +341,30 @@ export async function getCatalogSnapshot() {
     categories: categories.map(toCategory),
     products: products.map(toProduct),
   };
+}
+
+export async function createCategory(role: UserRole | null, category: { name: string; image?: string }) {
+  await ensureAuthSeeded();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+
+  const name = category.name.trim();
+  if (!name) return { ok: false, error: "Invalid category name" } as const;
+
+  const baseSlug = slugify(name);
+  const exists = await prisma.category.findFirst({ where: { OR: [{ slug: baseSlug }, { name: { equals: name, mode: "insensitive" } }] } });
+  if (exists) return { ok: false, error: "Category already exists" } as const;
+
+  const created = await prisma.category.create({
+    data: {
+      id: `cat-${Date.now()}`,
+      name,
+      slug: baseSlug,
+      image: category.image?.trim() || null,
+      productCount: 0,
+    },
+  });
+
+  return { ok: true, category: toCategory(created) } as const;
 }
 
 export async function getProductActivities(limit = 50) {
@@ -356,6 +395,50 @@ export async function getUsers() {
 
   const users = await prisma.user.findMany({ orderBy: [{ role: "asc" }, { id: "asc" }] });
   return users.map(toUser);
+}
+
+export async function setUserAccess(role: UserRole | null, userId: string, blocked: boolean) {
+  await ensureAuthSeeded();
+  if (role !== "admin") return { ok: false, error: "Unauthorized" } as const;
+
+  const existing = await prisma.user.findUnique({ where: { id: userId } });
+  if (!existing) return { ok: false, error: "User not found" } as const;
+
+  const updated = await prisma.user.update({ where: { id: userId }, data: { blocked } });
+  return { ok: true, user: toUser(updated) } as const;
+}
+
+export async function createManagedUser(
+  role: UserRole | null,
+  input: { name: string; email: string; password: string; role: UserRole; mobile?: string }
+) {
+  await ensureAuthSeeded();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+
+  const normalizedEmail = input.email.toLowerCase().trim();
+  const existing = await prisma.authCredential.findUnique({ where: { email: normalizedEmail } });
+  if (existing) return { ok: false, error: "Email already registered" } as const;
+
+  const user = await prisma.user.create({
+    data: {
+      id: `u-${Date.now()}`,
+      name: input.name.trim(),
+      email: normalizedEmail,
+      mobile: input.mobile?.trim() || null,
+      role: input.role,
+    },
+  });
+
+  await prisma.authCredential.create({
+    data: {
+      id: `cred-${user.id}`,
+      userId: user.id,
+      email: normalizedEmail,
+      password: input.password,
+    },
+  });
+
+  return { ok: true, user: toUser(user) } as const;
 }
 
 async function createLoginActivity(params: {
@@ -405,6 +488,17 @@ export async function loginUser(email: string, password: string) {
     return { ok: false as const, error: "Invalid email or password" };
   }
 
+    if (credential.user.blocked) {
+      await createLoginActivity({
+        userId: credential.user.id,
+        email: normalizedEmail,
+        role: credential.user.role,
+        method: "password",
+        status: "failed",
+      });
+      return { ok: false as const, error: "Account is blocked" };
+    }
+
   await createLoginActivity({
     userId: credential.user.id,
     email: normalizedEmail,
@@ -437,6 +531,7 @@ export async function signupUser(name: string, email: string, password: string, 
       email: normalizedEmail,
       mobile: mobile?.trim() || null,
       role: "user",
+      blocked: false,
     },
   });
 
@@ -544,6 +639,7 @@ export async function createProduct(role: UserRole | null, product: Product): Pr
       unit: product.unit,
       createdAt: new Date(product.createdAt),
       upcoming: product.upcoming ?? false,
+        blocked: false,
     },
     update: {
       name: product.name,
@@ -557,6 +653,7 @@ export async function createProduct(role: UserRole | null, product: Product): Pr
       unit: product.unit,
       createdAt: new Date(product.createdAt),
       upcoming: product.upcoming ?? false,
+        blocked: false,
     },
   });
 

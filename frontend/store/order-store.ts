@@ -8,7 +8,7 @@ type PlaceOrderInput = {
   userName: string;
   userMobile: string;
   userAddress: string;
-  items: Array<{ product: Product; quantity: number }>;
+  items: Array<{ product: Product; quantity: number; unit: string }>;
 };
 
 interface OrderState {
@@ -18,10 +18,11 @@ interface OrderState {
 }
 
 function toOrderItems(items: PlaceOrderInput["items"]) {
-  return items.map(({ product, quantity }) => ({
+  return items.map(({ product, quantity, unit }) => ({
     productId: product.id,
     productName: product.name,
     quantity,
+    unit,
     price: product.price,
     image: product.image,
   }));

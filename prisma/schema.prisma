@@ -92,6 +92,7 @@ model User {
   mobile          String?
   role            UserRole
   avatar          String?
+  blocked         Boolean         @default(false)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   loginActivities LoginActivity[]

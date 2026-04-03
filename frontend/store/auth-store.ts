@@ -9,10 +9,10 @@ type StoredCredential = {
 };
 
 const DEFAULT_USERS: User[] = [
-  { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin" },
-  { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm" },
-  { id: "db-1", name: "Delivery Boy", email: "delivery@nmart.com", role: "delivery" },
-  { id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210", role: "user" },
+  { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin", blocked: false },
+  { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm", blocked: false },
+  { id: "db-1", name: "Delivery Boy", email: "delivery@nmart.com", role: "delivery", blocked: false },
+  { id: "u1", name: "John Doe", email: "user@nmart.com", mobile: "9876543210", role: "user", blocked: false },
 ];
 
 const DEFAULT_CREDENTIALS: StoredCredential[] = [
@@ -39,6 +39,8 @@ interface AuthState {
   users: User[];
   credentials: StoredCredential[];
   loginActivities: LoginActivity[];
+  createManagedUser: (input: { name: string; email: string; password: string; role: UserRole; mobile?: string }) => { ok: boolean; user?: User; error?: string };
+  setUserAccess: (userId: string, blocked: boolean) => { ok: boolean; user?: User; error?: string };
   login: (email: string, password: string) => { success: boolean; redirect?: string; error?: string };
   signup: (name: string, email: string, password: string, mobile?: string) => { success: boolean; error?: string };
   logout: () => void;
@@ -74,6 +76,10 @@ function pushActivity(state: AuthState, activity: LoginActivity): LoginActivity[
   return [activity, ...state.loginActivities].slice(0, 200);
 }
 
+function canCreateManagedUsers(role: UserRole | null) {
+  return role === "admin";
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -83,6 +89,51 @@ export const useAuthStore = create<AuthState>()(
       users: DEFAULT_USERS,
       credentials: DEFAULT_CREDENTIALS,
       loginActivities: [],
+      createManagedUser: (input) => {
+        if (!canCreateManagedUsers(get().user?.role ?? null)) {
+          return { ok: false, error: "Unauthorized" };
+        }
+
+        const normalizedEmail = normalizeEmail(input.email);
+        const exists = get().credentials.some((item) => item.email === normalizedEmail);
+        if (exists) return { ok: false, error: "Email already registered" };
+
+        const newUser: User = {
+          id: `u-${Date.now()}`,
+          name: input.name.trim(),
+          email: normalizedEmail,
+          mobile: input.mobile?.trim(),
+          role: input.role,
+          blocked: false,
+        };
+
+        set((state) => ({
+          users: [newUser, ...state.users],
+          credentials: [
+            { email: normalizedEmail, password: input.password, userId: newUser.id },
+            ...state.credentials,
+          ],
+        }));
+
+        return { ok: true, user: newUser };
+      },
+      setUserAccess: (userId: string, blocked: boolean) => {
+        if (get().user?.role !== "admin") {
+          return { ok: false, error: "Unauthorized" };
+        }
+
+        const target = get().users.find((item) => item.id === userId);
+        if (!target) return { ok: false, error: "User not found" };
+
+        const updatedUser = { ...target, blocked };
+        set((state) => ({
+          users: state.users.map((item) => (item.id === userId ? updatedUser : item)),
+          user: state.user?.id === userId && blocked ? null : state.user,
+          isAuthenticated: state.user?.id === userId && blocked ? false : state.isAuthenticated,
+        }));
+
+        return { ok: true, user: updatedUser };
+      },
       login: (email: string, password: string) => {
         const normalizedEmail = normalizeEmail(email);
         const state = get();
@@ -103,6 +154,21 @@ export const useAuthStore = create<AuthState>()(
             ),
           }));
           return { success: false, error: "Invalid email or password" };
+        }
+
+        if (matchedUser.blocked) {
+          set((current) => ({
+            loginActivities: pushActivity(
+              current,
+              createActivity({
+                email: normalizedEmail,
+                method: "password",
+                status: "failed",
+                user: matchedUser,
+              })
+            ),
+          }));
+          return { success: false, error: "Account is blocked" };
         }
 
         set((current) => ({
@@ -126,7 +192,7 @@ export const useAuthStore = create<AuthState>()(
         const exists = get().credentials.some((item) => item.email === normalizedEmail);
         if (exists) return { success: false, error: "Email already registered" };
 
-        const newUser: User = { id: `u-${Date.now()}`, name, email: normalizedEmail, mobile, role: "user" };
+        const newUser: User = { id: `u-${Date.now()}`, name, email: normalizedEmail, mobile, role: "user", blocked: false };
 
         set((state) => ({
           users: [newUser, ...state.users],
@@ -156,7 +222,7 @@ export const useAuthStore = create<AuthState>()(
         const credential = state.credentials.find((item) => item.email === normalizedEmail);
         if (!credential || credential.password !== password) return null;
         const matchedUser = state.users.find((item) => item.id === credential.userId);
-        if (!matchedUser) return null;
+        if (!matchedUser || matchedUser.blocked) return null;
         return getRedirectPath(matchedUser.role);
       },
       getAllUsers: () => get().users,

@@ -11,7 +11,8 @@ export async function POST(request: NextRequest) {
 
   const result = await loginUser(payload.email, payload.password);
   if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: 401 });
+    const status = result.error === "Account is blocked" ? 403 : 401;
+    return NextResponse.json({ error: result.error }, { status });
   }
 
   return NextResponse.json(result);

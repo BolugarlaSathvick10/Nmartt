@@ -93,7 +93,7 @@ export default function PMProductsPage() {
       categoryId: categories[0]?.id ?? "",
       categoryName: categories[0]?.name ?? "",
       stock: 0,
-      unit: "kg",
+      unit: "1 kg",
       createdAt: new Date().toISOString(),
       upcoming: false,
     });
@@ -233,6 +233,13 @@ export default function PMProductsPage() {
                 <Input type="number" {...form.register("stock", { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
+              <div>
+                <Label>Quantity / pack sizes</Label>
+                <Input {...form.register("unit")} className="mt-1" placeholder="1 kg | 500 g | 250 g" />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Use a single value for a fixed pack or separate multiple options with |.
+                </p>
+              </div>
             <div>
               <Label>{t("pmProducts.category")}</Label>
               <Select
