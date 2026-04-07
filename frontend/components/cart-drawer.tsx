@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, Minus, Plus, Trash2, X } from "lucide-react";
@@ -85,7 +86,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     exit={{ opacity: 0 }}
                     className="space-y-3 p-4"
                   >
-                    {items.map(({ product, quantity, unit, unitPrice }, index) => (
+                    {items.map(({ product, quantity, unit, unitPrice }) => (
                       <CartItemCard
                         key={`${product.id}-${unit}`}
                         locale={locale}
@@ -97,7 +98,6 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           updateQuantity(product.id, newQty, unit)
                         }
                         onRemove={() => removeItem(product.id, unit)}
-                        index={index}
                       />
                     ))}
                   </motion.div>
@@ -246,7 +246,6 @@ function CartItemCard({
   unitPrice,
   onQuantityChange,
   onRemove,
-  index,
 }: {
   locale: string;
   product: Product;
@@ -255,7 +254,6 @@ function CartItemCard({
   unitPrice: number;
   onQuantityChange: (qty: number) => void;
   onRemove: () => void;
-  index: number;
 }) {
   const localizedProductName = localizeProductName(product.name, locale);
   const localizedCategoryName = localizeCategoryName(product.categoryName, locale);
@@ -271,12 +269,15 @@ function CartItemCard({
       {/* Product Image */}
       <motion.div
         whileHover={{ scale: 1.05 }}
-        className="h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-muted to-muted/50"
+        className="relative h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-muted to-muted/50"
       >
-        <img
+        <Image
           src={product.image}
           alt={localizedProductName}
-          className="h-full w-full object-cover"
+          fill
+          sizes="80px"
+          unoptimized
+          className="object-cover"
         />
       </motion.div>
 

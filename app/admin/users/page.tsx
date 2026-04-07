@@ -189,7 +189,7 @@ export default function AdminUsersPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {users.map((u, i) => (
+              {users.map((u) => (
                 <motion.div
                   key={u.id}
                   initial={{ opacity: 0, x: -10 }}

@@ -108,7 +108,7 @@ export default function DeliveryOrdersPage() {
       </div>
       <div className="space-y-4">
         <AnimatePresence>
-          {orders.map((o, i) => (
+          {orders.map((o) => (
             <motion.div
               key={o.id}
               initial={{ opacity: 0, y: 20 }}

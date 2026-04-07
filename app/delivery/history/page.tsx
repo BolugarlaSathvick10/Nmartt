@@ -68,7 +68,7 @@ export default function DeliveryHistoryPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {delivered.map((o, i) => (
+            {delivered.map((o) => (
               <motion.div
                 key={o.id}
                 initial={{ opacity: 0, x: -10 }}

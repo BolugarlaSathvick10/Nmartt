@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CreditCard, Landmark, Smartphone } from "lucide-react";
@@ -23,6 +24,14 @@ type PendingCheckout = {
 
 const UPI_QR_IMAGE_PATH = "/upi-scanner.png";
 const UPI_QR_FALLBACK_PATH = "/upi-scanner-placeholder.svg";
+
+const resolveQrImagePath = (path?: string) => {
+  const normalizedPath = path?.trim();
+  if (!normalizedPath || normalizedPath === UPI_QR_IMAGE_PATH) {
+    return UPI_QR_FALLBACK_PATH;
+  }
+  return normalizedPath;
+};
 
 type PaymentConfig = {
   upiQrImageUrl: string;
@@ -48,7 +57,7 @@ export default function PaymentPage() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
-  const [qrPreview, setQrPreview] = useState<string>(UPI_QR_IMAGE_PATH);
+  const [qrPreview, setQrPreview] = useState<string>(resolveQrImagePath());
   const [qrImageAvailable, setQrImageAvailable] = useState(true);
 
   useEffect(() => {
@@ -73,7 +82,7 @@ export default function PaymentPage() {
       if (!response.ok) return;
       const config = (await response.json()) as PaymentConfig;
       setPaymentConfig(config);
-      setQrPreview(config.upiQrImageUrl || UPI_QR_IMAGE_PATH);
+      setQrPreview(resolveQrImagePath(config.upiQrImageUrl));
     };
 
     void loadPaymentConfig();
@@ -229,9 +238,12 @@ export default function PaymentPage() {
             <div className="space-y-3 rounded-lg border border-border p-4">
               <p className="text-sm font-medium">Scan and pay using this UPI QR</p>
               {qrImageAvailable ? (
-                <img
+                <Image
                   src={qrPreview}
                   alt="UPI scanner"
+                  width={400}
+                  height={400}
+                  unoptimized
                   className="w-full max-w-xs rounded-lg border border-border bg-black/5"
                   onError={() => {
                     if (qrPreview !== UPI_QR_FALLBACK_PATH) {

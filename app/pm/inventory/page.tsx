@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Search, AlertTriangle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -100,8 +101,8 @@ export default function PMInventoryPage() {
                   <tr key={p.id} className="border-b hover:bg-muted/30">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0">
-                          <img src={p.image} alt="" className="h-full w-full object-cover" />
+                        <div className="relative h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0">
+                          <Image src={p.image} alt="" fill sizes="40px" unoptimized className="object-cover" />
                         </div>
                         <span className="font-medium">{localizeProductName(p.name, locale)}</span>
                       </div>

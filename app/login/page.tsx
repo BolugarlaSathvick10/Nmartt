@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import type { User as AuthUser } from "@/types";
 
 type LoginForm = { email: string; password: string };
 type SignupForm = { name: string; email: string; password: string; mobile: string; otp: string };
@@ -67,7 +68,7 @@ export default function LoginPage() {
       const user = (result as { user?: { id?: string; name?: string; email?: string; role?: string; mobile?: string } }).user;
       if (user) {
         useAuthStore.setState({
-          user: user as any,
+          user: user as AuthUser,
           isAuthenticated: true,
         });
       }
@@ -108,7 +109,7 @@ export default function LoginPage() {
       const user = (result as { user?: { id?: string; name?: string; email?: string; role?: string; mobile?: string } }).user;
       if (user) {
         useAuthStore.setState({
-          user: user as any,
+          user: user as AuthUser,
           isAuthenticated: true,
         });
       }

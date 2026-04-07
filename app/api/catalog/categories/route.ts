@@ -5,12 +5,16 @@ import { getRoleFromRequest } from "@/lib/server/request-auth";
 export async function POST(request: NextRequest) {
   const role = getRoleFromRequest(request);
   const payload = (await request.json()) as { name?: string; image?: string };
+  const name = payload.name?.trim();
 
-  if (!payload.name) {
+  if (!name) {
     return NextResponse.json({ error: "Invalid category name" }, { status: 400 });
   }
 
-  const result = await createCategory(role, payload);
+  const result = await createCategory(role, {
+    name,
+    image: payload.image?.trim() || undefined,
+  });
   if (!result.ok) {
     return NextResponse.json({ error: result.error ?? "Failed to create category" }, { status: 403 });
   }

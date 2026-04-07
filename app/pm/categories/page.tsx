@@ -42,7 +42,7 @@ export default function PMCategoriesPage() {
         <p className="text-muted-foreground">{t("pmCategories.subtitle")}</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {categories.map((c, i) => (
+        {categories.map((c) => (
           <motion.div key={c.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
             <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
               <CardHeader>

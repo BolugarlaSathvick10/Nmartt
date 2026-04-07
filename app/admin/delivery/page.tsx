@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Truck, X } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -80,35 +81,35 @@ export default function AdminDeliveryPage() {
           <p className="text-muted-foreground">{t("adminDelivery.subtitle")}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 min-w-0">
-          {deliveryBoys.map((deliveryBoy, i) => {
+          {deliveryBoys.map((deliveryBoy) => {
             const stats = getDeliveryStats(deliveryBoy);
             return (
-            <motion.div key={deliveryBoy.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-              <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
-                <CardHeader className="flex flex-row items-center gap-4 cursor-pointer" onClick={() => setSelectedDeliveryBoy(deliveryBoy)}>
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback>{deliveryBoy.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className="text-lg">{deliveryBoy.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{deliveryBoy.mobile || "No mobile"}</p>
-                  </div>
-                  <Truck className="h-8 w-8 text-primary ml-auto" />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-6 text-sm">
+              <motion.div key={deliveryBoy.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
+                  <CardHeader className="flex flex-row items-center gap-4 cursor-pointer" onClick={() => setSelectedDeliveryBoy(deliveryBoy)}>
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback>{deliveryBoy.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
                     <div>
-                      <p className="text-muted-foreground">{t("adminDelivery.activeOrders")}</p>
-                      <p className="font-semibold">{stats.activeOrders}</p>
+                      <CardTitle className="text-lg">{deliveryBoy.name}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{deliveryBoy.mobile || "No mobile"}</p>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">{t("adminDelivery.totalDeliveries")}</p>
-                      <p className="font-semibold">{stats.totalDeliveries}</p>
+                    <Truck className="h-8 w-8 text-primary ml-auto" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-6 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">{t("adminDelivery.activeOrders")}</p>
+                        <p className="font-semibold">{stats.activeOrders}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">{t("adminDelivery.totalDeliveries")}</p>
+                        <p className="font-semibold">{stats.totalDeliveries}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             );
           })}
           {deliveryBoys.length === 0 && (
@@ -183,8 +184,8 @@ function DocumentPreview({ title, imageUrl }: { title: string; imageUrl?: string
     <div className="rounded-lg border border-gray-100 p-3">
       <p className="text-sm font-medium text-gray-900">{title}</p>
       {imageUrl ? (
-        <div className="mt-2 h-44 overflow-hidden rounded-md border bg-muted">
-          <img src={imageUrl} alt={title} className="h-full w-full object-cover" />
+        <div className="relative mt-2 h-44 overflow-hidden rounded-md border bg-muted">
+          <Image src={imageUrl} alt={title} fill sizes="(max-width: 768px) 100vw, 400px" unoptimized className="object-cover" />
         </div>
       ) : (
         <p className="mt-2 text-sm text-muted-foreground">Not uploaded</p>

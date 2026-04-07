@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,7 +57,7 @@ export default function AdminPaymentsPage() {
     [user?.id, user?.role]
   );
 
-  const loadAll = async () => {
+  const loadAll = useCallback(async () => {
     const [configRes, historyRes] = await Promise.all([
       fetch("/api/payments/config", { cache: "no-store" }),
       fetch("/api/payments/history", { cache: "no-store", headers }),
@@ -72,12 +72,12 @@ export default function AdminPaymentsPage() {
       const historyData = (await historyRes.json()) as PaymentRecord[];
       setHistory(historyData);
     }
-  };
+  }, [headers]);
 
   useEffect(() => {
     if (!user?.id || !user?.role) return;
     void loadAll();
-  }, [user?.id, user?.role]);
+  }, [loadAll, user?.id, user?.role]);
 
   const saveConfig = async () => {
     setSaving(true);

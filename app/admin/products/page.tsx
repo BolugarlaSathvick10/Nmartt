@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react";
@@ -58,7 +59,7 @@ export default function AdminProductsPage() {
   const categories = isApiMode ? apiCategories : localCategories;
   const productActivities = isApiMode ? apiProductActivities : localProductActivities;
 
-  const loadApiData = async () => {
+  const loadApiData = useCallback(async () => {
     if (!isApiMode) return;
     try {
       const [snapshot, activities] = await Promise.all([
@@ -71,11 +72,11 @@ export default function AdminProductsPage() {
     } catch {
       setActionError("Failed to load products from API mode.");
     }
-  };
+  }, [isApiMode]);
 
   useEffect(() => {
     void loadApiData();
-  }, [isApiMode]);
+  }, [loadApiData]);
 
   useEffect(() => {
     if (!modalOpen) return;
@@ -314,8 +315,8 @@ export default function AdminProductsPage() {
                     <tr key={p.id} className="border-b hover:bg-gray-50 transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-gray-100 overflow-hidden shrink-0">
-                            <img src={p.image} alt="" className="h-full w-full object-cover" />
+                          <div className="relative h-10 w-10 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                            <Image src={p.image} alt="" fill sizes="40px" unoptimized className="object-cover" />
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">{localizeProductName(p.name, locale)}</p>
@@ -490,8 +491,8 @@ export default function AdminProductsPage() {
                 <Label>{t("adminProducts.imageUrlPreview")}</Label>
                 <Input {...form.register("image")} className="mt-1" />
                 {form.watch("image") && (
-                  <div className="mt-2 h-24 w-24 rounded-lg border overflow-hidden bg-muted">
-                    <img src={form.watch("image")} alt="" className="h-full w-full object-cover" />
+                  <div className="relative mt-2 h-24 w-24 rounded-lg border overflow-hidden bg-muted">
+                    <Image src={form.watch("image")} alt="" fill sizes="96px" unoptimized className="object-cover" />
                   </div>
                 )}
               </div>

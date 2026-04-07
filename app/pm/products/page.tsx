@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Search, Plus, Pencil } from "lucide-react";
@@ -48,7 +49,7 @@ export default function PMProductsPage() {
   const products = isApiMode ? apiProducts : localProducts;
   const categories = isApiMode ? apiCategories : localCategories;
 
-  const loadApiData = async () => {
+  const loadApiData = useCallback(async () => {
     if (!isApiMode) return;
     try {
       const snapshot = await getCatalogRepository().getSnapshot();
@@ -57,11 +58,11 @@ export default function PMProductsPage() {
     } catch {
       setActionError("Failed to load products from API mode.");
     }
-  };
+  }, [isApiMode]);
 
   useEffect(() => {
     void loadApiData();
-  }, [isApiMode]);
+  }, [loadApiData]);
 
   const form = useForm<Product & { upcoming?: boolean }>({
     defaultValues: {} as Product,
@@ -188,8 +189,8 @@ export default function PMProductsPage() {
                   <tr key={p.id} className="border-b hover:bg-muted/30">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0">
-                          <img src={p.image} alt="" className="h-full w-full object-cover" />
+                        <div className="relative h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0">
+                          <Image src={p.image} alt="" fill sizes="40px" unoptimized className="object-cover" />
                         </div>
                         <p className="font-medium">{localizeProductName(p.name, locale)}</p>
                       </div>
@@ -264,8 +265,8 @@ export default function PMProductsPage() {
               <Label>{t("pmProducts.imageUrlPreview")}</Label>
               <Input {...form.register("image")} className="mt-1" />
               {form.watch("image") && (
-                <div className="mt-2 h-24 w-24 rounded-lg border overflow-hidden bg-muted">
-                  <img src={form.watch("image")} alt="" className="h-full w-full object-cover" />
+                <div className="relative mt-2 h-24 w-24 rounded-lg border overflow-hidden bg-muted">
+                  <Image src={form.watch("image")} alt="" fill sizes="96px" unoptimized className="object-cover" />
                 </div>
               )}
             </div>

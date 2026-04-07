@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ElementType } from "react";
+import { useCallback, useEffect, useMemo, useState, type ElementType } from "react";
 import { motion } from "framer-motion";
 import { BellRing, Gift, Info, Megaphone, Ticket } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,13 +33,16 @@ export default function AdminNotificationPusherPage() {
   const [type, setType] = useState<NotificationType>("info");
   const [statusMessage, setStatusMessage] = useState("");
 
-  const authHeaders = {
-    "Content-Type": "application/json",
-    ...(user?.role ? { "x-user-role": user.role } : {}),
-    ...(user?.id ? { "x-user-id": user.id } : {}),
-  };
+  const authHeaders = useMemo(
+    () => ({
+      "Content-Type": "application/json",
+      ...(user?.role ? { "x-user-role": user.role } : {}),
+      ...(user?.id ? { "x-user-id": user.id } : {}),
+    }),
+    [user?.id, user?.role]
+  );
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     const response = await fetch("/api/notifications", {
       cache: "no-store",
       headers: authHeaders,
@@ -47,7 +50,7 @@ export default function AdminNotificationPusherPage() {
     if (!response.ok) return;
     const data = (await response.json()) as { notifications: AppNotification[] };
     setNotifications(data.notifications ?? []);
-  };
+  }, [authHeaders]);
 
   useEffect(() => {
     void loadNotifications();
@@ -55,7 +58,7 @@ export default function AdminNotificationPusherPage() {
       void loadNotifications();
     }, 6000);
     return () => clearInterval(timer);
-  }, [user?.id, user?.role]);
+  }, [loadNotifications]);
 
   const handlePush = async () => {
     setStatusMessage("");

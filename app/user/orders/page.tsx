@@ -79,7 +79,7 @@ export default function UserOrdersPage() {
         <p className="text-muted-foreground">{t("orders.subtitle")}</p>
       </div>
       <div className="space-y-4">
-        {myOrders.map((o, i) => (
+        {myOrders.map((o) => (
           <motion.div key={o.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
             <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
               <CardContent className="p-4">
