@@ -844,7 +844,6 @@ export async function createProduct(role: UserRole | null, product: Product): Pr
       unit: product.unit,
       createdAt: new Date(product.createdAt),
       upcoming: product.upcoming ?? false,
-        blocked: false,
     },
     update: {
       name: product.name,
@@ -858,7 +857,6 @@ export async function createProduct(role: UserRole | null, product: Product): Pr
       unit: product.unit,
       createdAt: new Date(product.createdAt),
       upcoming: product.upcoming ?? false,
-        blocked: false,
     },
   });
 
