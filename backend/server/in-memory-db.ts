@@ -456,13 +456,16 @@ async function ensureAuthSeeded() {
 }
 
 async function syncCategoryCounts() {
-  const counts = await prisma.product.groupBy({
-    by: ["categoryId"],
-    _count: { categoryId: true },
-  });
+  const products = (await prisma.product.findMany({
+    select: { categoryId: true },
+  })) as Array<{ categoryId: string }>;
 
-  const countMap = new Map(counts.map((row) => [row.categoryId, row._count.categoryId]));
-  const categories = await prisma.category.findMany();
+  const countMap = new Map<string, number>();
+  for (const product of products) {
+    countMap.set(product.categoryId, (countMap.get(product.categoryId) ?? 0) + 1);
+  }
+
+  const categories = (await prisma.category.findMany()) as Array<{ id: string }>;
 
   await prisma.$transaction(
     categories.map((category) =>
