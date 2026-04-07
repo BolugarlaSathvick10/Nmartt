@@ -3,7 +3,7 @@ import { MOCK_ORDERS, MOCK_USERS } from "@/lib/mock-data";
 import { prisma } from "@/lib/prisma";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { Prisma } from "@prisma/client";
+import type { InputJsonValue } from "@prisma/client/runtime/client";
 import type {
   AuthMethod,
   LoginActivity,
@@ -427,7 +427,7 @@ async function ensureOrderSeed() {
       userName: order.userName,
       userMobile: order.userMobile,
       userAddress: order.userAddress,
-      items: order.items as unknown as Prisma.InputJsonValue,
+      items: order.items as unknown as InputJsonValue,
       total: order.total,
       status: order.status,
       deliveryBoyId: order.deliveryBoyId ?? DEFAULT_ORDER_DELIVERY.deliveryBoyId,
@@ -936,7 +936,7 @@ export async function placeOrder(order: Order) {
       userName: order.userName,
       userMobile: order.userMobile,
       userAddress: order.userAddress,
-      items: order.items as unknown as Prisma.InputJsonValue,
+      items: order.items as unknown as InputJsonValue,
       total: order.total,
       status: order.status,
       deliveryBoyId: order.deliveryBoyId ?? DEFAULT_ORDER_DELIVERY.deliveryBoyId,
