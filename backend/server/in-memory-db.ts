@@ -352,8 +352,8 @@ async function ensureCategoryAndProductSeed() {
   const count = await prisma.category.count();
   if (count > 0) return;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.category.createMany({
+  await prisma.$transaction([
+    prisma.category.createMany({
       data: starterCatalog.categories.map((category) => ({
         id: category.id,
         name: category.name,
@@ -361,9 +361,8 @@ async function ensureCategoryAndProductSeed() {
         image: category.image ?? null,
         productCount: category.productCount,
       })),
-    });
-
-    await tx.product.createMany({
+    }),
+    prisma.product.createMany({
       data: starterCatalog.products.map((product) => ({
         id: product.id,
         name: product.name,
@@ -378,8 +377,8 @@ async function ensureCategoryAndProductSeed() {
         createdAt: new Date(product.createdAt),
         upcoming: product.upcoming ?? false,
       })),
-    });
-  });
+    }),
+  ]);
 }
 
 async function ensureUserSeed() {
