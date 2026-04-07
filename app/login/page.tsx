@@ -58,7 +58,6 @@ export default function LoginPage() {
   const onLogin = async (data: LoginForm) => {
     setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
     const result =
       dataSourceMode === "api"
         ? await getAuthRepository().login(data.email, data.password)
@@ -85,7 +84,6 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
     // Mock OTP: any 6 digits works. Redirect as user for demo.
     const result = login("user@nmart.com", "user123");
     setLoading(false);
@@ -101,7 +99,6 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
     const result =
       dataSourceMode === "api"
         ? await getAuthRepository().signup(data.name, data.email, data.password, data.mobile)

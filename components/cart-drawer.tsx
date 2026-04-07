@@ -132,7 +132,7 @@ function CartHeader({
     <motion.div
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.1, duration: 0.3 }}
+      transition={{ duration: 0.2 }}
       className="flex h-16 items-center justify-between border-b bg-gradient-to-r from-background to-background/95 px-6 shadow-sm flex-shrink-0"
     >
       <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
@@ -174,13 +174,13 @@ function CartFooter({
     <motion.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.15, duration: 0.3 }}
+      transition={{ duration: 0.2 }}
       className="border-t bg-gradient-to-t from-background via-background to-background/95 shadow-[0_-4px_16px_rgba(0,0,0,0.1)] p-6 space-y-4 flex-shrink-0"
     >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
+        transition={{ duration: 0.2 }}
         className="flex justify-between items-center"
       >
         <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -199,7 +199,7 @@ function CartFooter({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 }}
+        transition={{ duration: 0.2 }}
         className="text-xs text-muted-foreground text-center"
       >
         {totalItems} {t("cart.items")}{totalItems !== 1 ? "s" : ""} in your cart
@@ -251,7 +251,7 @@ function CartItemCard({
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
+      transition={{ duration: 0.2 }}
       whileHover={{ y: -2 }}
       className="flex items-center gap-4 rounded-xl border border-white/10 bg-card/50 p-3 hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
     >
@@ -331,7 +331,7 @@ function EmptyCartState({ onClose }: { onClose: () => void }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: 0.2 }}
+      transition={{ duration: 0.2 }}
       className="flex h-full flex-col items-center justify-center gap-4 px-6 py-12"
     >
       <motion.div

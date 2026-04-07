@@ -1,0 +1,5 @@
+Place your UPI scanner QR image in this folder as:
+
+upi-scanner.png
+
+It will be shown on the payment page at /user/payment.

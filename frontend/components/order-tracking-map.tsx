@@ -126,7 +126,7 @@ export function OrderTrackingMap({
   const showRider = trackingStatus !== "pending" && riderPosition;
 
   return (
-    <div className={className} style={{ height }}>
+    <div className={`relative z-0 overflow-hidden ${className}`} style={{ height }}>
       <div style={{ position: "relative", height: "100%", width: "100%" }}>
         <MapContainer
           center={[(SHOP_LOCATION.lat + user.lat) / 2, (SHOP_LOCATION.lng + user.lng) / 2]}

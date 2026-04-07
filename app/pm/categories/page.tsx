@@ -43,7 +43,7 @@ export default function PMCategoriesPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {categories.map((c, i) => (
-          <motion.div key={c.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+          <motion.div key={c.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
             <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
               <CardHeader>
                 <FolderTree className="h-8 w-8 text-primary mb-2" />

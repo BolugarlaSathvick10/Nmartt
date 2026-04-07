@@ -357,7 +357,7 @@ export default function AdminAuditPage() {
               <div key={user.id} className="rounded-lg border border-gray-100 p-3 text-sm">
                 <p className="font-medium text-gray-900">{user.name}</p>
                 <p className="text-gray-500">
-                  {user.email} | {user.role} | {user.source} | {new Date(user.createdAt ?? new Date().toISOString()).toLocaleString()}
+                  {user.email} | {user.role} | {user.registrationSource ?? "legacy"} | {new Date(user.createdAt ?? new Date().toISOString()).toLocaleString()}
                 </p>
               </div>
             ))}

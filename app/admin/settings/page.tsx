@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -25,6 +26,18 @@ export default function AdminSettingsPage() {
                 <input className="mt-1 h-10 w-full rounded-lg border bg-background px-3 py-2 text-sm" defaultValue="N-Mart" readOnly />
               </div>
               <Button variant="outline" disabled>{t("adminSettings.saveMock")}</Button>
+            </CardContent>
+          </CardHeader>
+        </Card>
+
+        <Card className="glass-card border-white/20">
+          <CardHeader>
+            <CardTitle>Payments</CardTitle>
+            <CardContent className="space-y-3 pt-4">
+              <p className="text-sm text-muted-foreground">Manage scanner image path, payment numbers, and payment history.</p>
+              <Button asChild>
+                <Link href="/admin/payments">Open Payments Admin</Link>
+              </Button>
             </CardContent>
           </CardHeader>
         </Card>

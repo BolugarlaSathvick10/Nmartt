@@ -83,7 +83,7 @@ export default function AdminDeliveryPage() {
           {deliveryBoys.map((deliveryBoy, i) => {
             const stats = getDeliveryStats(deliveryBoy);
             return (
-            <motion.div key={deliveryBoy.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+            <motion.div key={deliveryBoy.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
               <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
                 <CardHeader className="flex flex-row items-center gap-4 cursor-pointer" onClick={() => setSelectedDeliveryBoy(deliveryBoy)}>
                   <Avatar className="h-12 w-12">

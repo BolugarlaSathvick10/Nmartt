@@ -73,7 +73,7 @@ export default function DeliveryHistoryPage() {
                 key={o.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ duration: 0.2 }}
                 className="flex flex-col gap-2 rounded-lg border p-4 hover:bg-muted/30"
               >
                 <div className="flex justify-between items-start">

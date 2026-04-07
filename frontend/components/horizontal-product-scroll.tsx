@@ -47,7 +47,7 @@ export function HorizontalProductScroll({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
-      setTimeout(checkScroll, 300);
+      checkScroll();
     }
   };
 
@@ -88,7 +88,7 @@ export function HorizontalProductScroll({
         <div
           ref={scrollContainerRef}
           onScroll={checkScroll}
-          className="flex gap-4 overflow-x-auto pb-2 scroll-smooth scrollbar-hide"
+          className="flex gap-6 overflow-x-auto pb-2 scroll-smooth scrollbar-hide"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -104,12 +104,13 @@ export function HorizontalProductScroll({
               key={product.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1, duration: 0.3 }}
-              className="flex-shrink-0 w-[160px] sm:w-[180px]"
+              transition={{ duration: 0.2 }}
+              className="flex-shrink-0"
+              style={{ width: "clamp(160px, 26vw, 220px)", minWidth: "clamp(160px, 26vw, 220px)" }}
             >
               <Card className="glass-card border-amber-500/30 overflow-hidden hover:shadow-xl hover:border-amber-500/60 transition-all duration-300 group/card h-full flex flex-col">
                 {/* Image */}
-                <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-muted to-muted/50">
+                <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 sm:h-52">
                   <img
                     src={product.image}
                     alt={localizedProductName}
@@ -125,17 +126,17 @@ export function HorizontalProductScroll({
                 </div>
 
                 {/* Content */}
-                <CardContent className="p-3 flex flex-col flex-1">
-                  <h3 className="font-semibold text-xs text-foreground line-clamp-2 leading-snug">
+                <CardContent className="p-4 flex flex-col flex-1">
+                  <h3 className="font-semibold text-sm text-foreground line-clamp-2 leading-snug">
                     {localizedProductName}
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-1 flex-1">
+                  <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wide flex-1">
                     {localizedCategoryName}
                   </p>
 
                   {/* Price (if available) */}
                   {product.price && (
-                    <p className="text-xs font-bold text-primary mt-2">
+                    <p className="font-bold text-lg text-primary mt-3">
                       {formatPrice(product.price)}
                     </p>
                   )}
@@ -149,10 +150,10 @@ export function HorizontalProductScroll({
                     <Button
                       size="sm"
                       variant={isInterested(product.id) ? "outline" : "default"}
-                      className="w-full text-xs gap-1 h-8 font-medium shadow-none hover:shadow-none focus-visible:ring-offset-0"
+                      className="w-full gap-1.5 h-9 font-medium shadow-none hover:shadow-none focus-visible:ring-offset-0"
                       onClick={() => onNotifyMe(product.id)}
                     >
-                      <Bell className="h-3 w-3" />
+                      <Bell className="h-4 w-4" />
                       {isInterested(product.id) ? "Remove Interest" : "Notify"}
                     </Button>
                   </motion.div>

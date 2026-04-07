@@ -28,6 +28,7 @@ const adminNav: NavItem[] = [
 	{ href: "/admin/coupons", labelKey: "sidebar.coupons", icon: Ticket },
 	{ href: "/admin/notification-pusher", labelKey: "sidebar.notificationPusher", icon: BellRing },
 	{ href: "/admin/orders", labelKey: "sidebar.orders", icon: ShoppingCart },
+	{ href: "/admin/payments", labelKey: "sidebar.payments", icon: History },
 	{ href: "/admin/users", labelKey: "sidebar.users", icon: Users },
 	{ href: "/admin/delivery", labelKey: "sidebar.delivery", icon: Truck },
 	{ href: "/admin/settings", labelKey: "sidebar.settings", icon: Settings },

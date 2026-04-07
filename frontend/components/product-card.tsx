@@ -73,7 +73,7 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ delay: 0.1 }}
+                transition={{ duration: 0.2 }}
                 className="w-fit rounded-full bg-red-500/90 px-2.5 py-1 text-xs font-semibold text-white shadow-lg"
               >
                 {discountPercent}% off

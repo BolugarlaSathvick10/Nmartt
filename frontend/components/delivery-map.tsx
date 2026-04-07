@@ -78,7 +78,7 @@ export function DeliveryMap({
   }, [showRoute, user.lat, user.lng]);
 
   return (
-    <div className={className} style={{ height }}>
+    <div className={`relative z-0 overflow-hidden ${className}`} style={{ height }}>
       <MapContainer
         center={[(SHOP_LOCATION.lat + user.lat) / 2, (SHOP_LOCATION.lng + user.lng) / 2]}
         zoom={12}

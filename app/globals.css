@@ -78,3 +78,12 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Keep Leaflet map layers below fixed app header and overlays */
+.leaflet-container,
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control {
+  z-index: 10 !important;
+}

@@ -114,7 +114,7 @@ export default function DeliveryOrdersPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ duration: 0.2 }}
             >
               <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
                 <CardContent className="p-4">

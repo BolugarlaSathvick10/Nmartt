@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="UPI Scanner Placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <text x="400" y="90" fill="#e5e7eb" font-family="Arial, sans-serif" font-size="42" text-anchor="middle" font-weight="700">UPI SCANNER</text>
+  <text x="400" y="130" fill="#9ca3af" font-family="Arial, sans-serif" font-size="24" text-anchor="middle">Replace with public/upi-scanner.png</text>
+  <rect x="120" y="180" width="560" height="560" rx="24" fill="#ffffff"/>
+  <g fill="#111827">
+    <rect x="170" y="230" width="80" height="80"/>
+    <rect x="290" y="230" width="40" height="40"/>
+    <rect x="350" y="230" width="120" height="40"/>
+    <rect x="510" y="230" width="120" height="120"/>
+    <rect x="170" y="350" width="40" height="120"/>
+    <rect x="230" y="350" width="120" height="40"/>
+    <rect x="390" y="350" width="80" height="80"/>
+    <rect x="490" y="390" width="40" height="120"/>
+    <rect x="550" y="390" width="80" height="40"/>
+    <rect x="230" y="450" width="40" height="120"/>
+    <rect x="290" y="490" width="160" height="40"/>
+    <rect x="470" y="530" width="160" height="40"/>
+    <rect x="170" y="610" width="120" height="80"/>
+    <rect x="330" y="610" width="80" height="40"/>
+    <rect x="450" y="610" width="40" height="80"/>
+    <rect x="530" y="610" width="100" height="80"/>
+  </g>
+  <text x="400" y="820" fill="#d1d5db" font-family="Arial, sans-serif" font-size="26" text-anchor="middle">Upload your real QR in the payment page</text>
+</svg>

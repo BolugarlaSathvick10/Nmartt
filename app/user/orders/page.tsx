@@ -80,7 +80,7 @@ export default function UserOrdersPage() {
       </div>
       <div className="space-y-4">
         {myOrders.map((o, i) => (
-          <motion.div key={o.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+          <motion.div key={o.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
             <Card className="glass-card border-white/20 hover:shadow-lg transition-all">
               <CardContent className="p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

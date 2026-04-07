@@ -85,7 +85,7 @@ export default function UserHomePage() {
       <motion.section
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
+        transition={{ duration: 0.2 }}
       >
         <AppCard className="p-4 md:p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center">

@@ -54,6 +54,29 @@ type CouponRecord = {
   createdAt: string;
 };
 
+type PaymentConfigRecord = {
+  upiQrImageUrl: string;
+  upiId: string;
+  paytmNumber: string;
+  phonepeNumber: string;
+  gpayNumber: string;
+  codEnabled: boolean;
+  updatedAt: string;
+};
+
+type PaymentHistoryRecord = {
+  id: string;
+  orderId: string;
+  userId: string;
+  userName: string;
+  amount: number;
+  method: "paytm" | "phonepe" | "gpay" | "cod" | "upi_scanner";
+  utrNumber?: string;
+  screenshotFileName?: string;
+  status: "submitted" | "verified" | "rejected";
+  createdAt: string;
+};
+
 type NotificationType = "festival" | "offer" | "coupon" | "info";
 
 type ServerNotification = {
@@ -99,9 +122,21 @@ const DEFAULT_COUPONS: CouponRecord[] = [
   },
 ];
 
+const DEFAULT_PAYMENT_CONFIG: PaymentConfigRecord = {
+  upiQrImageUrl: "/upi-scanner.png",
+  upiId: "",
+  paytmNumber: "",
+  phonepeNumber: "",
+  gpayNumber: "",
+  codEnabled: true,
+  updatedAt: new Date().toISOString(),
+};
+
 let couponRecords: CouponRecord[] = [...DEFAULT_COUPONS];
 let notificationRecords: ServerNotification[] = [];
 let notificationReadsByUser: Record<string, string[]> = {};
+let paymentConfigRecord: PaymentConfigRecord = { ...DEFAULT_PAYMENT_CONFIG };
+let paymentHistoryRecords: PaymentHistoryRecord[] = [];
 let runtimeStoreLoaded = false;
 
 const RUNTIME_STORE_FILE = path.join(process.cwd(), ".nmart-runtime-store.json");
@@ -110,6 +145,8 @@ type RuntimeStore = {
   coupons: CouponRecord[];
   notifications: ServerNotification[];
   notificationReadsByUser: Record<string, string[]>;
+  paymentConfig: PaymentConfigRecord;
+  paymentHistory: PaymentHistoryRecord[];
 };
 
 async function loadRuntimeStore() {
@@ -121,10 +158,14 @@ async function loadRuntimeStore() {
     couponRecords = parsed.coupons && parsed.coupons.length > 0 ? parsed.coupons : [...DEFAULT_COUPONS];
     notificationRecords = parsed.notifications ?? [];
     notificationReadsByUser = parsed.notificationReadsByUser ?? {};
+    paymentConfigRecord = parsed.paymentConfig ? { ...DEFAULT_PAYMENT_CONFIG, ...parsed.paymentConfig } : { ...DEFAULT_PAYMENT_CONFIG };
+    paymentHistoryRecords = parsed.paymentHistory ?? [];
   } catch {
     couponRecords = [...DEFAULT_COUPONS];
     notificationRecords = [];
     notificationReadsByUser = {};
+    paymentConfigRecord = { ...DEFAULT_PAYMENT_CONFIG };
+    paymentHistoryRecords = [];
   }
 
   runtimeStoreLoaded = true;
@@ -135,6 +176,8 @@ async function saveRuntimeStore() {
     coupons: couponRecords,
     notifications: notificationRecords,
     notificationReadsByUser,
+    paymentConfig: paymentConfigRecord,
+    paymentHistory: paymentHistoryRecords,
   };
 
   await fs.writeFile(RUNTIME_STORE_FILE, JSON.stringify(payload, null, 2), "utf-8");
@@ -200,7 +243,7 @@ function toUser(record: {
   mobile: string | null;
   role: UserRole;
   avatar: string | null;
-  blocked: boolean;
+  blocked?: boolean;
   createdAt: Date;
   registrationSource?: string | null;
   aadhaarNumber?: string | null;
@@ -217,7 +260,7 @@ function toUser(record: {
     mobile: record.mobile ?? undefined,
     role: record.role,
     avatar: record.avatar ?? undefined,
-    blocked: record.blocked,
+    blocked: record.blocked ?? false,
     createdAt: record.createdAt.toISOString(),
     registrationSource: (record.registrationSource as User["registrationSource"]) ?? "legacy",
     aadhaarNumber: record.aadhaarNumber ?? undefined,
@@ -621,7 +664,8 @@ export async function loginUser(email: string, password: string) {
     return { ok: false as const, error: "Invalid email or password" };
   }
 
-    if (credential.user.blocked) {
+    const userBlocked = (credential.user as { blocked?: boolean }).blocked ?? false;
+    if (userBlocked) {
       await createLoginActivity({
         userId: credential.user.id,
         email: normalizedEmail,
@@ -707,18 +751,26 @@ export async function updateUserProfile(
 
   const existing = await prisma.user.findUnique({ where: { id: userId } });
   if (!existing) return { ok: false, error: "User not found" } as const;
+  const current = existing as typeof existing & {
+    aadhaarNumber?: string | null;
+    drivingLicenseNumber?: string | null;
+    aadhaarImage?: string | null;
+    drivingLicenseImage?: string | null;
+    vehicleNumber?: string | null;
+    address?: string | null;
+  };
 
   await prisma.user.update({
     where: { id: userId },
     data: {
       name: updates.name?.trim() || existing.name,
       mobile: updates.mobile?.trim() || existing.mobile,
-      aadhaarNumber: updates.aadhaarNumber?.trim() || existing.aadhaarNumber,
-      drivingLicenseNumber: updates.drivingLicenseNumber?.trim() || existing.drivingLicenseNumber,
-      aadhaarImage: updates.aadhaarImage?.trim() || existing.aadhaarImage,
-      drivingLicenseImage: updates.drivingLicenseImage?.trim() || existing.drivingLicenseImage,
-      vehicleNumber: updates.vehicleNumber?.trim() || existing.vehicleNumber,
-      address: updates.address?.trim() || existing.address,
+      aadhaarNumber: updates.aadhaarNumber?.trim() || current.aadhaarNumber,
+      drivingLicenseNumber: updates.drivingLicenseNumber?.trim() || current.drivingLicenseNumber,
+      aadhaarImage: updates.aadhaarImage?.trim() || current.aadhaarImage,
+      drivingLicenseImage: updates.drivingLicenseImage?.trim() || current.drivingLicenseImage,
+      vehicleNumber: updates.vehicleNumber?.trim() || current.vehicleNumber,
+      address: updates.address?.trim() || current.address,
     },
   });
 
@@ -1022,6 +1074,74 @@ export async function validateCoupon(code: string, subtotal: number) {
   return { ok: true, coupon } as const;
 }
 
+export async function getPaymentConfig() {
+  await loadRuntimeStore();
+  return paymentConfigRecord;
+}
+
+export async function updatePaymentConfig(
+  role: UserRole | null,
+  input: {
+    upiQrImageUrl?: string;
+    upiId?: string;
+    paytmNumber?: string;
+    phonepeNumber?: string;
+    gpayNumber?: string;
+    codEnabled?: boolean;
+  }
+) {
+  await loadRuntimeStore();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+
+  paymentConfigRecord = {
+    ...paymentConfigRecord,
+    upiQrImageUrl: input.upiQrImageUrl?.trim() ?? paymentConfigRecord.upiQrImageUrl,
+    upiId: input.upiId?.trim() ?? paymentConfigRecord.upiId,
+    paytmNumber: input.paytmNumber?.trim() ?? paymentConfigRecord.paytmNumber,
+    phonepeNumber: input.phonepeNumber?.trim() ?? paymentConfigRecord.phonepeNumber,
+    gpayNumber: input.gpayNumber?.trim() ?? paymentConfigRecord.gpayNumber,
+    codEnabled: input.codEnabled ?? paymentConfigRecord.codEnabled,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await saveRuntimeStore();
+  return { ok: true, config: paymentConfigRecord } as const;
+}
+
+export async function createPaymentHistory(input: {
+  orderId: string;
+  userId: string;
+  userName: string;
+  amount: number;
+  method: "paytm" | "phonepe" | "gpay" | "cod" | "upi_scanner";
+  utrNumber?: string;
+  screenshotFileName?: string;
+}) {
+  await loadRuntimeStore();
+  const record: PaymentHistoryRecord = {
+    id: `pay-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    orderId: input.orderId,
+    userId: input.userId,
+    userName: input.userName,
+    amount: Math.max(0, Math.round(input.amount)),
+    method: input.method,
+    utrNumber: input.utrNumber?.trim() || undefined,
+    screenshotFileName: input.screenshotFileName?.trim() || undefined,
+    status: "submitted",
+    createdAt: new Date().toISOString(),
+  };
+
+  paymentHistoryRecords = [record, ...paymentHistoryRecords].slice(0, 1000);
+  await saveRuntimeStore();
+  return { ok: true, payment: record } as const;
+}
+
+export async function getPaymentHistory(role: UserRole | null) {
+  await loadRuntimeStore();
+  if (!canAdminOnly(role)) return { ok: false, error: "Unauthorized" } as const;
+  return { ok: true, records: paymentHistoryRecords } as const;
+}
+
 export async function pushNotification(
   role: UserRole | null,
   actorUserId: string | null,
@@ -1034,7 +1154,7 @@ export async function pushNotification(
   const message = input.message.trim();
   if (!title || !message) return { ok: false, error: "Title and message are required" } as const;
 
-  const targetRoles = input.targetRoles && input.targetRoles.length > 0 ? input.targetRoles : ["user"];
+  const targetRoles: UserRole[] = input.targetRoles && input.targetRoles.length > 0 ? input.targetRoles : ["user"];
   const notification: ServerNotification = {
     id: `noti-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     title,
