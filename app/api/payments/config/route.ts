@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPaymentConfig, updatePaymentConfig } from "@/lib/server/in-memory-db";
 import { getRoleFromRequest } from "@/lib/server/request-auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const config = await getPaymentConfig();
   return NextResponse.json(config);

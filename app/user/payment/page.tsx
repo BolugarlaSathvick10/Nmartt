@@ -51,7 +51,7 @@ export default function PaymentPage() {
   const placeOrder = useOrderStore((s) => s.placeOrder);
 
   const [pendingCheckout, setPendingCheckout] = useState<PendingCheckout | null>(null);
-  const [method, setMethod] = useState<PaymentMethod>("upi_scanner");
+  const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [utrNumber, setUtrNumber] = useState("");
   const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null);
   const [placingOrder, setPlacingOrder] = useState(false);
@@ -110,6 +110,11 @@ export default function PaymentPage() {
     if (!pendingCheckout) return;
     if (items.length === 0) {
       setError("Your cart is empty. Please add items before payment.");
+      return;
+    }
+
+    if (!method) {
+      setError("Please select a payment method.");
       return;
     }
 
@@ -233,6 +238,8 @@ export default function PaymentPage() {
               );
             })}
           </div>
+
+          {!method && <p className="text-sm text-muted-foreground">No payment method selected yet.</p>}
 
           {method === "upi_scanner" && (
             <div className="space-y-3 rounded-lg border border-border p-4">

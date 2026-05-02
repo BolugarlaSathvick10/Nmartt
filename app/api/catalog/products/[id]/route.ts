@@ -3,6 +3,8 @@ import { deleteProduct, updateProduct } from "@/lib/server/in-memory-db";
 import { getRoleFromRequest } from "@/lib/server/request-auth";
 import type { Product } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: { id: string } };
 
 export async function PUT(request: NextRequest, { params }: Params) {

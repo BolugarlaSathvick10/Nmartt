@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createCategory } from "@/lib/server/in-memory-db";
 import { getRoleFromRequest } from "@/lib/server/request-auth";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   const role = getRoleFromRequest(request);
   const payload = (await request.json()) as { name?: string; image?: string };

@@ -44,7 +44,9 @@ export interface AuthRepository {
   clearLoginActivities(olderThanDays?: number): Promise<MutationResult>;
   createUserAccount(input: { name: string; email: string; password: string; role: UserRole; mobile?: string }): Promise<{ ok: boolean; user?: User; error?: string }>;
   setUserAccess(userId: string, blocked: boolean): Promise<MutationResult>;
-  login(email: string, password: string): Promise<{ ok: boolean; user?: User; redirect?: string; error?: string }>;
+  login(identifier: string, password: string): Promise<{ ok: boolean; user?: User; redirect?: string; error?: string }>;
+  requestPasswordResetOtp(mobile: string): Promise<MutationResult>;
+  resetPasswordWithOtp(mobile: string, otp: string, newPassword: string): Promise<MutationResult>;
   signup(
     name: string,
     email: string,

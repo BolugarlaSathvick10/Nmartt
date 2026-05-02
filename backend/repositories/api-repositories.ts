@@ -135,11 +135,11 @@ class ApiAuthRepository implements AuthRepository {
     return parseResult(response, "Failed to update user access");
   }
 
-  async login(email: string, password: string) {
+  async login(identifier: string, password: string) {
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
 
     if (!response.ok) {
@@ -149,6 +149,24 @@ class ApiAuthRepository implements AuthRepository {
 
     const data = (await response.json()) as { user?: unknown; redirect?: string };
     return { ok: true, user: data.user as any, redirect: data.redirect };
+  }
+
+  async requestPasswordResetOtp(mobile: string) {
+    const response = await fetch("/api/auth/forgot-password/otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mobile }),
+    });
+    return parseResult(response, "Failed to send OTP");
+  }
+
+  async resetPasswordWithOtp(mobile: string, otp: string, newPassword: string) {
+    const response = await fetch("/api/auth/forgot-password/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mobile, otp, newPassword }),
+    });
+    return parseResult(response, "Failed to reset password");
   }
 
   async signup(name: string, email: string, password: string, mobile?: string) {

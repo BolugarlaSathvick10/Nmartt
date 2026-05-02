@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { setUserAccess } from "@/lib/server/in-memory-db";
 import { getRoleFromRequest } from "@/lib/server/request-auth";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: { id: string } };
 
 export async function PATCH(request: NextRequest, { params }: Params) {

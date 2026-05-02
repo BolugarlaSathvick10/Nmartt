@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateCoupon } from "@/lib/server/in-memory-db";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   const payload = (await request.json()) as { code?: string; subtotal?: number };
   if (!payload.code || payload.subtotal == null) {

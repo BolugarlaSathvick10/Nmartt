@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { clearLoginActivities, getLoginActivities } from "@/lib/server/in-memory-db";
 import { getRoleFromRequest } from "@/lib/server/request-auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const limitParam = request.nextUrl.searchParams.get("limit");
   const limit = limitParam ? Number(limitParam) : 50;

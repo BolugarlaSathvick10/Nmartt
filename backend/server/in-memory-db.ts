@@ -652,35 +652,45 @@ function getRedirectPath(role: UserRole): string {
   }
 }
 
-export async function loginUser(email: string, password: string) {
+const passwordResetOtps = new Map<string, { otp: string; expiresAt: number }>();
+
+export async function loginUser(identifier: string, password: string) {
   await ensureAuthSeeded();
 
-  const normalizedEmail = email.toLowerCase().trim();
-  const credential = await prisma.authCredential.findUnique({
-    where: { email: normalizedEmail },
-    include: { user: true },
-  });
+  const normalizedIdentifier = identifier.toLowerCase().trim();
+  const normalizedMobile = identifier.trim();
+  const isEmailIdentifier = normalizedIdentifier.includes("@");
+
+  const credential = isEmailIdentifier
+    ? await prisma.authCredential.findUnique({
+        where: { email: normalizedIdentifier },
+        include: { user: true },
+      })
+    : await prisma.authCredential.findFirst({
+        where: { user: { mobile: normalizedMobile } },
+        include: { user: true },
+      });
 
   if (!credential || credential.password !== password) {
-    await createLoginActivity({ email: normalizedEmail, method: "password", status: "failed" });
+    await createLoginActivity({ email: normalizedIdentifier, method: "password", status: "failed" });
     return { ok: false as const, error: "Invalid email or password" };
   }
 
-    const userBlocked = (credential.user as { blocked?: boolean }).blocked ?? false;
-    if (userBlocked) {
-      await createLoginActivity({
-        userId: credential.user.id,
-        email: normalizedEmail,
-        role: credential.user.role,
-        method: "password",
-        status: "failed",
-      });
-      return { ok: false as const, error: "Account is blocked" };
-    }
+  const userBlocked = (credential.user as { blocked?: boolean }).blocked ?? false;
+  if (userBlocked) {
+    await createLoginActivity({
+      userId: credential.user.id,
+      email: credential.email,
+      role: credential.user.role,
+      method: "password",
+      status: "failed",
+    });
+    return { ok: false as const, error: "Account is blocked" };
+  }
 
   await createLoginActivity({
     userId: credential.user.id,
-    email: normalizedEmail,
+    email: credential.email,
     role: credential.user.role,
     method: "password",
     status: "success",
@@ -691,6 +701,54 @@ export async function loginUser(email: string, password: string) {
     user: toUser(credential.user),
     redirect: getRedirectPath(credential.user.role),
   };
+}
+
+export async function requestPasswordResetOtp(mobile: string) {
+  await ensureAuthSeeded();
+
+  const normalizedMobile = mobile.trim();
+  if (!normalizedMobile) {
+    return { ok: false as const, error: "Mobile number is required" };
+  }
+
+  const user = await prisma.user.findFirst({ where: { mobile: normalizedMobile } });
+  if (!user) {
+    return { ok: false as const, error: "No account found for this mobile number" };
+  }
+
+  const otp = "123456";
+  passwordResetOtps.set(normalizedMobile, { otp, expiresAt: Date.now() + 5 * 60 * 1000 });
+  return { ok: true as const };
+}
+
+export async function resetPasswordWithOtp(mobile: string, otp: string, newPassword: string) {
+  await ensureAuthSeeded();
+
+  const normalizedMobile = mobile.trim();
+  const normalizedOtp = otp.trim();
+  const normalizedPassword = newPassword.trim();
+
+  if (!normalizedMobile || !normalizedOtp || !normalizedPassword) {
+    return { ok: false as const, error: "Mobile, OTP and new password are required" };
+  }
+
+  const user = await prisma.user.findFirst({ where: { mobile: normalizedMobile } });
+  if (!user) {
+    return { ok: false as const, error: "No account found for this mobile number" };
+  }
+
+  const otpRecord = passwordResetOtps.get(normalizedMobile);
+  if (!otpRecord || otpRecord.expiresAt < Date.now() || otpRecord.otp !== normalizedOtp) {
+    return { ok: false as const, error: "Invalid or expired OTP" };
+  }
+
+  await prisma.authCredential.update({
+    where: { userId: user.id },
+    data: { password: normalizedPassword },
+  });
+
+  passwordResetOtps.delete(normalizedMobile);
+  return { ok: true as const };
 }
 
 export async function signupUser(name: string, email: string, password: string, mobile?: string) {

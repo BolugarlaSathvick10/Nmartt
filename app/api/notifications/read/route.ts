@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { markAllNotificationsRead, markNotificationRead } from "@/lib/server/in-memory-db";
 import { getRoleFromRequest, getUserIdFromRequest } from "@/lib/server/request-auth";
 
+export const dynamic = "force-dynamic";
+
 export async function PATCH(request: NextRequest) {
   const role = getRoleFromRequest(request);
   const userId = getUserIdFromRequest(request);

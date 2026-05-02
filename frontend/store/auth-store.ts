@@ -8,6 +8,12 @@ type StoredCredential = {
   userId: string;
 };
 
+type StoredResetOtp = {
+  mobile: string;
+  otp: string;
+  expiresAt: number;
+};
+
 const DEFAULT_USERS: User[] = [
   { id: "admin-1", name: "Admin", email: "admin@nmart.com", role: "admin", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
   { id: "pm-1", name: "Product Manager", email: "pm@nmart.com", role: "pm", blocked: false, createdAt: "2024-01-01T00:00:00.000Z", registrationSource: "seed" },
@@ -38,10 +44,13 @@ interface AuthState {
   hasHydrated: boolean;
   users: User[];
   credentials: StoredCredential[];
+  resetOtps: StoredResetOtp[];
   loginActivities: LoginActivity[];
   createManagedUser: (input: { name: string; email: string; password: string; role: UserRole; mobile?: string }) => { ok: boolean; user?: User; error?: string };
   setUserAccess: (userId: string, blocked: boolean) => { ok: boolean; user?: User; error?: string };
-  login: (email: string, password: string) => { success: boolean; redirect?: string; error?: string };
+  login: (identifier: string, password: string) => { success: boolean; redirect?: string; error?: string };
+  requestPasswordResetOtp: (mobile: string) => { success: boolean; error?: string };
+  resetPasswordWithOtp: (mobile: string, otp: string, newPassword: string) => { success: boolean; error?: string };
   signup: (name: string, email: string, password: string, mobile?: string) => { success: boolean; error?: string };
   logout: () => void;
   getRedirectAfterLogin: (email: string, password: string) => string | null;
@@ -97,6 +106,7 @@ export const useAuthStore = create<AuthState>()(
       hasHydrated: false,
       users: DEFAULT_USERS,
       credentials: DEFAULT_CREDENTIALS,
+      resetOtps: [],
       loginActivities: [],
       createManagedUser: (input) => {
         if (!canCreateManagedUsers(get().user?.role ?? null)) {
@@ -145,10 +155,16 @@ export const useAuthStore = create<AuthState>()(
 
         return { ok: true, user: updatedUser };
       },
-      login: (email: string, password: string) => {
-        const normalizedEmail = normalizeEmail(email);
+      login: (identifier: string, password: string) => {
+        const normalizedIdentifier = identifier.toLowerCase().trim();
+        const normalizedMobile = identifier.trim();
         const state = get();
-        const credential = state.credentials.find((item) => item.email === normalizedEmail);
+        const credentialByEmail = state.credentials.find((item) => item.email === normalizedIdentifier);
+        const credentialByMobile = state.credentials.find((item) => {
+          const linkedUser = state.users.find((user) => user.id === item.userId);
+          return linkedUser?.mobile?.trim() === normalizedMobile;
+        });
+        const credential = credentialByEmail ?? credentialByMobile;
         const matchedUser = credential
           ? state.users.find((item) => item.id === credential.userId)
           : undefined;
@@ -158,7 +174,7 @@ export const useAuthStore = create<AuthState>()(
             loginActivities: pushActivity(
               current,
               createActivity({
-                email: normalizedEmail,
+                email: normalizedIdentifier,
                 method: "password",
                 status: "failed",
               })
@@ -172,7 +188,7 @@ export const useAuthStore = create<AuthState>()(
             loginActivities: pushActivity(
               current,
               createActivity({
-                email: normalizedEmail,
+                email: matchedUser.email,
                 method: "password",
                 status: "failed",
                 user: matchedUser,
@@ -188,7 +204,7 @@ export const useAuthStore = create<AuthState>()(
           loginActivities: pushActivity(
             current,
             createActivity({
-              email: normalizedEmail,
+              email: matchedUser.email,
               method: "password",
               status: "success",
               user: matchedUser,
@@ -197,6 +213,64 @@ export const useAuthStore = create<AuthState>()(
         }));
 
         return { success: true, redirect: getRedirectPath(matchedUser.role) };
+      },
+      requestPasswordResetOtp: (mobile: string) => {
+        const normalizedMobile = mobile.trim();
+        if (!normalizedMobile) {
+          return { success: false, error: "Mobile number is required" };
+        }
+
+        const state = get();
+        const user = state.users.find((item) => item.mobile?.trim() === normalizedMobile);
+        if (!user) {
+          return { success: false, error: "No account found for this mobile number" };
+        }
+
+        const demoOtp = "123456";
+        const expiresAt = Date.now() + 5 * 60 * 1000;
+
+        set((current) => ({
+          resetOtps: [
+            { mobile: normalizedMobile, otp: demoOtp, expiresAt },
+            ...current.resetOtps.filter((item) => item.mobile !== normalizedMobile),
+          ],
+        }));
+
+        return { success: true };
+      },
+      resetPasswordWithOtp: (mobile: string, otp: string, newPassword: string) => {
+        const normalizedMobile = mobile.trim();
+        const sanitizedOtp = otp.trim();
+        const sanitizedPassword = newPassword.trim();
+
+        if (!normalizedMobile || !sanitizedOtp || !sanitizedPassword) {
+          return { success: false, error: "Mobile, OTP and new password are required" };
+        }
+
+        const state = get();
+        const user = state.users.find((item) => item.mobile?.trim() === normalizedMobile);
+        if (!user) {
+          return { success: false, error: "No account found for this mobile number" };
+        }
+
+        const otpRecord = state.resetOtps.find((item) => item.mobile === normalizedMobile);
+        if (!otpRecord || otpRecord.expiresAt < Date.now() || otpRecord.otp !== sanitizedOtp) {
+          return { success: false, error: "Invalid or expired OTP" };
+        }
+
+        const targetCredential = state.credentials.find((item) => item.userId === user.id);
+        if (!targetCredential) {
+          return { success: false, error: "Credential not found" };
+        }
+
+        set((current) => ({
+          credentials: current.credentials.map((item) =>
+            item.userId === user.id ? { ...item, password: sanitizedPassword } : item
+          ),
+          resetOtps: current.resetOtps.filter((item) => item.mobile !== normalizedMobile),
+        }));
+
+        return { success: true };
       },
       signup: (name: string, email: string, password: string, mobile?: string) => {
         const normalizedEmail = normalizeEmail(email);
@@ -284,6 +358,7 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         users: state.users,
         credentials: state.credentials,
+        resetOtps: state.resetOtps,
         loginActivities: state.loginActivities,
       }),
       onRehydrateStorage: () => (state) => {
@@ -300,6 +375,7 @@ export const useAuthStore = create<AuthState>()(
             saved.credentials && saved.credentials.length > 0
               ? saved.credentials
               : current.credentials,
+          resetOtps: saved.resetOtps ?? current.resetOtps,
           loginActivities: saved.loginActivities ?? current.loginActivities,
         };
       },

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { deleteCoupon, updateCoupon } from "@/lib/server/in-memory-db";
 import { getRoleFromRequest } from "@/lib/server/request-auth";
 
+export const dynamic = "force-dynamic";
+
 export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }

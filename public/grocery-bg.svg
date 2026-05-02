@@ -1,0 +1,61 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4FFF6"/>
+      <stop offset="1" stop-color="#E9FCEF"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#22C55E"/>
+      <stop offset="1" stop-color="#16A34A"/>
+    </linearGradient>
+    <linearGradient id="fruit" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F97316"/>
+      <stop offset="1" stop-color="#EA580C"/>
+    </linearGradient>
+    <filter id="blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+
+  <circle cx="250" cy="220" r="140" fill="#86EFAC" fill-opacity="0.35" filter="url(#blur)"/>
+  <circle cx="1350" cy="180" r="170" fill="#BBF7D0" fill-opacity="0.45" filter="url(#blur)"/>
+  <circle cx="1300" cy="760" r="180" fill="#A7F3D0" fill-opacity="0.4" filter="url(#blur)"/>
+
+  <g opacity="0.82">
+    <ellipse cx="280" cy="720" rx="100" ry="75" fill="url(#fruit)"/>
+    <path d="M240 650C258 620 300 620 320 645" stroke="#15803D" stroke-width="12" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.78">
+    <ellipse cx="520" cy="780" rx="95" ry="70" fill="#FACC15"/>
+    <path d="M485 725C510 700 550 700 570 725" stroke="#15803D" stroke-width="10" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.84">
+    <ellipse cx="1180" cy="760" rx="110" ry="80" fill="#EF4444"/>
+    <ellipse cx="1245" cy="760" rx="110" ry="80" fill="#DC2626"/>
+    <path d="M1208 688C1200 650 1240 650 1235 690" stroke="#166534" stroke-width="12" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.76">
+    <ellipse cx="1000" cy="280" rx="120" ry="70" fill="#4ADE80"/>
+    <ellipse cx="1075" cy="310" rx="95" ry="55" fill="url(#leaf)"/>
+    <ellipse cx="925" cy="305" rx="95" ry="55" fill="url(#leaf)"/>
+  </g>
+
+  <g opacity="0.68" fill="#16A34A">
+    <circle cx="680" cy="250" r="10"/>
+    <circle cx="715" cy="220" r="8"/>
+    <circle cx="745" cy="260" r="9"/>
+    <circle cx="775" cy="230" r="8"/>
+    <circle cx="805" cy="255" r="9"/>
+  </g>
+
+  <g opacity="0.74">
+    <rect x="230" y="560" width="260" height="95" rx="18" fill="#DCFCE7"/>
+    <rect x="1120" y="560" width="250" height="95" rx="18" fill="#D1FAE5"/>
+    <rect x="680" y="610" width="240" height="95" rx="18" fill="#ECFCCB"/>
+  </g>
+</svg>

@@ -75,8 +75,8 @@ class LocalAuthRepository implements AuthRepository {
     return result.ok ? { ok: true } : { ok: false, error: result.error };
   }
 
-  async login(email: string, password: string) {
-    const result = useAuthStore.getState().login(email, password);
+  async login(identifier: string, password: string) {
+    const result = useAuthStore.getState().login(identifier, password);
     if (!result.success) {
       return { ok: false, error: result.error };
     }
@@ -86,6 +86,16 @@ class LocalAuthRepository implements AuthRepository {
       user: useAuthStore.getState().user ?? undefined,
       redirect: result.redirect,
     };
+  }
+
+  async requestPasswordResetOtp(mobile: string) {
+    const result = useAuthStore.getState().requestPasswordResetOtp(mobile);
+    return { ok: result.success, error: result.error };
+  }
+
+  async resetPasswordWithOtp(mobile: string, otp: string, newPassword: string) {
+    const result = useAuthStore.getState().resetPasswordWithOtp(mobile, otp, newPassword);
+    return { ok: result.success, error: result.error };
   }
 
   async signup(name: string, email: string, password: string, mobile?: string) {

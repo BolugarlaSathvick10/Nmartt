@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signupUser } from "@/lib/server/in-memory-db";
 
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {

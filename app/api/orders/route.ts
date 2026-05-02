@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOrders, placeOrder } from "@/lib/server/in-memory-db";
 import type { Order, Product } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 type PlaceOrderInput = {
   userId: string;
   userName: string;

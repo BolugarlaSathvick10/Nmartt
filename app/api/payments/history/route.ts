@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPaymentHistory, getPaymentHistory } from "@/lib/server/in-memory-db";
 import { getRoleFromRequest, getUserIdFromRequest } from "@/lib/server/request-auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const role = getRoleFromRequest(request);
   const result = await getPaymentHistory(role);
