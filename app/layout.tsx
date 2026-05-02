@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "Fresh groceries delivered to your door",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{

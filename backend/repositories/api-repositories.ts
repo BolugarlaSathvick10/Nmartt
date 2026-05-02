@@ -9,6 +9,7 @@ import type {
   PlaceOrderInput,
 } from "@/lib/repositories/contracts";
 import type { OrderStatus, Product } from "@/types";
+import { getCachedOrders, setCachedOrders, revalidateOrders } from "@/store/orders-cache";
 
 function authHeaders() {
   const user = useAuthStore.getState().user;
@@ -227,11 +228,26 @@ class ApiAuthRepository implements AuthRepository {
 
 class ApiOrderRepository implements OrderRepository {
   async getOrders() {
+    // If we have cached orders on the client, return them immediately and revalidate in background.
+    const cached = getCachedOrders();
+    if (cached) {
+      // background revalidate
+      void revalidateOrders(async () => {
+        const res = await fetch("/api/orders", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch orders");
+        const data = await res.json();
+        return data;
+      });
+      return cached;
+    }
+
     const response = await fetch("/api/orders", { cache: "no-store" });
     if (!response.ok) {
       throw new Error("Failed to fetch orders");
     }
-    return response.json();
+    const data = await response.json();
+    setCachedOrders(data);
+    return data;
   }
 
   async placeOrder(input: PlaceOrderInput) {
@@ -245,6 +261,13 @@ class ApiOrderRepository implements OrderRepository {
       return { ok: false, error: failed.error };
     }
     const data = (await response.json()) as { order: unknown };
+    // Update client cache so UI shows the new order immediately
+    try {
+      const current = getCachedOrders() ?? [];
+      setCachedOrders([data.order as any, ...current]);
+    } catch (e) {
+      // ignore cache errors
+    }
     return { ok: true, order: data.order as any };
   }
 
@@ -254,7 +277,19 @@ class ApiOrderRepository implements OrderRepository {
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ status }),
     });
-    return parseResult(response, "Failed to update order status");
+    const result = await parseResult(response, "Failed to update order status");
+    if (result.ok) {
+      try {
+        const current = getCachedOrders();
+        if (current) {
+          const updated = current.map((o: any) => (o.id === orderId ? { ...o, status, deliveredAt: status === "delivered" ? new Date().toISOString() : o.deliveredAt } : o));
+          setCachedOrders(updated);
+        }
+      } catch (e) {
+        // ignore cache update errors
+      }
+    }
+    return result;
   }
 }
 

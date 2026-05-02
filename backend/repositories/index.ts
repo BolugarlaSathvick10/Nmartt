@@ -5,8 +5,13 @@ import { localAuthRepository, localCatalogRepository, localOrderRepository } fro
 type DataSourceMode = "local" | "api";
 
 function getMode(): DataSourceMode {
-  const raw = process.env.NEXT_PUBLIC_DATA_SOURCE_MODE;
-  return raw === "api" ? "api" : "local";
+  const raw = process.env.NEXT_PUBLIC_DATA_SOURCE_MODE?.toLowerCase();
+
+  if (raw === "api" || raw === "local") {
+    return raw;
+  }
+
+  return process.env.NODE_ENV === "production" ? "api" : "local";
 }
 
 export function getCatalogRepository(): CatalogRepository {

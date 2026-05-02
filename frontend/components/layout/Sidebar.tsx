@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, Settings, BarChart3, ClipboardList, History, Home, Boxes, Ticket, LogOut, HelpCircle, FileText, LifeBuoy, Menu, BellRing } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -109,12 +109,15 @@ export function Sidebar() {
           {nav.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const router = useRouter();
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 title={sidebarOpen ? undefined : t(item.labelKey)}
+                onMouseEnter={() => void router.prefetch(item.href)}
+                onFocus={() => void router.prefetch(item.href)}
                 className={cn(
                   "rounded-lg py-2.5 text-sm font-medium transition-colors duration-200",
                   "flex items-center gap-3 px-3",
