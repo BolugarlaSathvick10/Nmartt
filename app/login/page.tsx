@@ -38,6 +38,11 @@ export default function LoginPage() {
   const tr = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
 
   const [forgotOpen, setForgotOpen] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<"email" | "mobile">("email");
+  const [signupOtpSent, setSignupOtpSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotOtp, setForgotOtp] = useState("");
   const [forgotNewPassword, setForgotNewPassword] = useState("");
@@ -481,14 +486,14 @@ export default function LoginPage() {
       </div>
 
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
-        <DialogContent showClose={true} className="rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-slate-900">{t("auth.forgotTitle")}</DialogTitle>
-            <DialogDescription className="text-sm text-slate-600">{tr("auth.forgotDescriptionEmail", "Reset using Email + OTP")}</DialogDescription>
+        <DialogContent showClose={true} className="rounded-2xl max-w-md mx-auto w-full">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-2xl font-bold text-slate-900 text-center">{t("auth.forgotTitle")}</DialogTitle>
+            <DialogDescription className="text-center text-sm text-slate-600">{tr("auth.forgotDescriptionEmail", "Enter your email to reset your password")}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-6">
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t("auth.email")}</Label>
+              <Label className="text-sm font-semibold text-slate-700">{t("auth.email")}</Label>
               <div className="group relative mt-2">
                 <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-600 pointer-events-none" />
                 <Input
@@ -497,6 +502,7 @@ export default function LoginPage() {
                   className={inputClasses}
                   value={forgotEmail}
                   onChange={(event) => setForgotEmail(event.target.value)}
+                  disabled={forgotOtpSent}
                 />
               </div>
             </div>
@@ -504,7 +510,7 @@ export default function LoginPage() {
             {forgotOtpSent && (
               <>
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">{t("auth.otp")}</Label>
+                  <Label className="text-sm font-semibold text-slate-700">{t("auth.otp")}</Label>
                   <div className="group relative mt-2">
                     <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-600 pointer-events-none" />
                     <Input
@@ -516,7 +522,7 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">{tr("auth.newPassword", "New Password")}</Label>
+                  <Label className="text-sm font-semibold text-slate-700">{tr("auth.newPassword", "New Password")}</Label>
                   <div className="group relative mt-2">
                     <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-600 pointer-events-none" />
                     <Input
@@ -532,26 +538,44 @@ export default function LoginPage() {
             )}
 
             {forgotStatus && (
-              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700 font-medium">
+              <p className={`rounded-lg px-4 py-3 text-sm font-medium ${
+                forgotStatus.includes("successfully") || forgotStatus.includes("sent")
+                  ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border border-red-200 bg-red-50 text-red-700"
+              }`}>
                 {forgotStatus}
               </p>
             )}
 
             {!forgotOtpSent ? (
               <Button 
-                className="w-full h-10 rounded-[10px] bg-gradient-to-r from-emerald-600 to-green-500 text-white font-semibold shadow-lg shadow-emerald-300/40 transition-all hover:shadow-emerald-300/60 hover:-translate-y-0.5"
+                className="w-full h-11 rounded-lg bg-gradient-to-r from-emerald-600 to-green-500 text-white font-semibold shadow-lg shadow-emerald-300/40 transition-all hover:shadow-emerald-300/60"
                 onClick={onSendForgotOtp} 
-                disabled={forgotLoading}
+                disabled={forgotLoading || !forgotEmail}
               >
-                {forgotLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.sendOtp")}
+                {forgotLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    {tr("auth.sending", "Sending...")}
+                  </>
+                ) : (
+                  t("auth.sendOtp")
+                )}
               </Button>
             ) : (
               <Button 
-                className="w-full h-10 rounded-[10px] bg-gradient-to-r from-emerald-600 to-green-500 text-white font-semibold shadow-lg shadow-emerald-300/40 transition-all hover:shadow-emerald-300/60 hover:-translate-y-0.5"
+                className="w-full h-11 rounded-lg bg-gradient-to-r from-emerald-600 to-green-500 text-white font-semibold shadow-lg shadow-emerald-300/40 transition-all hover:shadow-emerald-300/60"
                 onClick={onResetPassword} 
-                disabled={forgotLoading}
+                disabled={forgotLoading || !forgotOtp || !forgotNewPassword}
               >
-                {forgotLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : tr("auth.resetPassword", "Reset Password")}
+                {forgotLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    {tr("auth.resetting", "Resetting...")}
+                  </>
+                ) : (
+                  tr("auth.resetPassword", "Reset Password")
+                )}
               </Button>
             )}
           </div>
