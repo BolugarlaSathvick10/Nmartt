@@ -38,13 +38,7 @@ export default function LoginPage() {
   const tr = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
 
   const [forgotOpen, setForgotOpen] = useState(false);
-  const [loginMethod, setLoginMethod] = useState<"email" | "mobile">("email");
-  const [signupOtpSent, setSignupOtpSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [forgotMobile, setForgotMobile] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
   const [forgotOtp, setForgotOtp] = useState("");
   const [forgotNewPassword, setForgotNewPassword] = useState("");
   const [forgotOtpSent, setForgotOtpSent] = useState(false);
@@ -133,14 +127,14 @@ export default function LoginPage() {
 
     const result =
       dataSourceMode === "api"
-        ? await getAuthRepository().requestPasswordResetOtp(forgotMobile)
-        : requestPasswordResetOtp(forgotMobile);
+        ? await getAuthRepository().requestPasswordResetOtp(forgotEmail)
+        : requestPasswordResetOtp(forgotEmail);
 
     setForgotLoading(false);
 
     if (isSuccessfulResult(result as { ok?: boolean; success?: boolean })) {
       setForgotOtpSent(true);
-      setForgotStatus(tr("auth.otpSent", "OTP sent to your mobile number"));
+      setForgotStatus(tr("auth.otpSentEmail", "OTP sent to your email address"));
     } else {
       setForgotStatus(translateAuthError((result as { error?: string }).error) || tr("auth.sendOtpFailed", "Failed to send OTP"));
     }
@@ -152,13 +146,14 @@ export default function LoginPage() {
 
     const result =
       dataSourceMode === "api"
-        ? await getAuthRepository().resetPasswordWithOtp(forgotMobile, forgotOtp, forgotNewPassword)
-        : resetPasswordWithOtp(forgotMobile, forgotOtp, forgotNewPassword);
+        ? await getAuthRepository().resetPasswordWithOtp(forgotEmail, forgotOtp, forgotNewPassword)
+        : resetPasswordWithOtp(forgotEmail, forgotOtp, forgotNewPassword);
 
     setForgotLoading(false);
 
     if (isSuccessfulResult(result as { ok?: boolean; success?: boolean })) {
       setForgotStatus(tr("auth.passwordResetSuccess", "Password reset successfully. You can now log in."));
+      setForgotEmail("");
       setForgotOtp("");
       setForgotNewPassword("");
       setTimeout(() => {
@@ -489,18 +484,19 @@ export default function LoginPage() {
         <DialogContent showClose={true} className="rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-slate-900">{t("auth.forgotTitle")}</DialogTitle>
-            <DialogDescription className="text-sm text-slate-600">{tr("auth.forgotDescriptionMobile", "Reset using Mobile + OTP")}</DialogDescription>
+            <DialogDescription className="text-sm text-slate-600">{tr("auth.forgotDescriptionEmail", "Reset using Email + OTP")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t("auth.mobile")}</Label>
+              <Label className="text-sm font-medium text-slate-700">{t("auth.email")}</Label>
               <div className="group relative mt-2">
-                <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-600 pointer-events-none" />
+                <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-600 pointer-events-none" />
                 <Input
-                  placeholder={t("auth.mobilePlaceholder")}
+                  placeholder={t("auth.emailPlaceholder")}
+                  type="email"
                   className={inputClasses}
-                  value={forgotMobile}
-                  onChange={(event) => setForgotMobile(event.target.value)}
+                  value={forgotEmail}
+                  onChange={(event) => setForgotEmail(event.target.value)}
                 />
               </div>
             </div>
