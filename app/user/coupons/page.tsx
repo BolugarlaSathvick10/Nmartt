@@ -75,7 +75,7 @@ export default function UserCouponsPage() {
 
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("coupons.title")}</h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{t("coupons.title")}</h1>
           <p className="text-sm text-gray-500 mt-1">{t("coupons.subtitle")}</p>
         </div>
 
@@ -83,11 +83,11 @@ export default function UserCouponsPage() {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900">{t("coupons.activeCoupons", { count: activeCoupons.length })}</h2>
             {activeCoupons.length > 0 ? (
-              <motion.div variants={container} className="grid md:grid-cols-2 gap-6">
+              <motion.div variants={container} className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
                 {activeCoupons.map((coupon) => (
                   <motion.div key={coupon.id} variants={item}>
                     <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
                             <div className="bg-green-100 rounded-lg p-3">
@@ -112,7 +112,7 @@ export default function UserCouponsPage() {
                         </div>
                         <Button
                           onClick={() => handleCopy(coupon.code)}
-                          className={`flex-shrink-0 transition-all ${
+                          className={`w-full flex-shrink-0 transition-all sm:w-auto ${
                             copiedCode === coupon.code
                               ? "bg-green-400 hover:bg-green-100 text-white-600"
                               : "bg-green-400 hover:bg-green-100 text-white-600"
@@ -144,11 +144,11 @@ export default function UserCouponsPage() {
           {usedCoupons.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">{t("coupons.usedCoupons", { count: usedCoupons.length })}</h2>
-              <motion.div variants={container} className="grid md:grid-cols-2 gap-6">
+              <motion.div variants={container} className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
                 {usedCoupons.map((coupon) => (
                   <motion.div key={coupon.id} variants={item}>
                     <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 opacity-80">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
                             <div className="bg-gray-100 rounded-lg p-3">

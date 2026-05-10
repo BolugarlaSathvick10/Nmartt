@@ -75,7 +75,7 @@ export default function UserOrdersPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{t("orders.title")}</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">{t("orders.title")}</h1>
         <p className="text-muted-foreground">{t("orders.subtitle")}</p>
       </div>
       <div className="space-y-4">
@@ -89,11 +89,11 @@ export default function UserOrdersPage() {
                     <p className="font-semibold">{formatPrice(o.total)} · {t("orders.itemsCount", { count: o.items.length })}</p>
                     <p className="text-sm text-muted-foreground">{formatDate(o.createdAt)}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setTrackingOrderId(o.id)}>
+                  <div className="flex flex-wrap gap-2">
+                    <Button className="w-full sm:w-auto" variant="outline" size="sm" onClick={() => setTrackingOrderId(o.id)}>
                       {t("orders.track")}
                     </Button>
-                    <Button variant="ghost" size="sm" asChild>
+                    <Button className="w-full sm:w-auto" variant="ghost" size="sm" asChild>
                       <Link href={`/user/orders?view=${o.id}`}>{t("orders.details")}</Link>
                     </Button>
                   </div>

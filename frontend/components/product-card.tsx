@@ -49,9 +49,9 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
       whileHover={{ y: -4 }}
       className="h-full"
     >
-      <Card className="glass-card border-white/20 overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
+      <Card className="glass-card group flex h-full flex-col overflow-hidden border-white/20 transition-all duration-300 hover:shadow-xl">
         {/* Image Section */}
-        <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 sm:h-52">
+        <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 sm:h-40 md:h-48 lg:h-52">
           <img
             src={product.image}
             alt={localizedProductName}
@@ -84,21 +84,21 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
         </div>
 
         {/* Content Section */}
-        <CardContent className="p-4 flex flex-col flex-1">
+        <CardContent className="flex flex-1 flex-col p-3 sm:p-4">
           {/* Product Info */}
           <div className="flex-1">
-            <h3 className="font-semibold text-sm text-foreground line-clamp-2 leading-snug">
+            <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground sm:text-[15px]">
               {localizedProductName}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">
+            <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground sm:text-xs">
               {localizedCategoryName}
             </p>
           </div>
 
           {/* Price Section */}
-          <div className="flex items-center justify-between mt-3 mb-3">
+          <div className="mb-2 mt-2.5 flex items-center justify-between sm:mb-3 sm:mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="font-bold text-lg text-primary">
+              <span className="text-base font-bold text-primary sm:text-lg">
                 {formatPrice(selectedPricing?.price ?? product.price)}
               </span>
               {hasDiscount && (
@@ -109,13 +109,13 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
             </div>
           </div>
 
-          <div className="mb-3 space-y-1.5">
+          <div className="mb-2.5 space-y-1.5 sm:mb-3">
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               Quantity
             </p>
             {hasQuantityPricing ? (
               <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-                <SelectTrigger className="h-8 rounded-md text-xs">
+                <SelectTrigger className="h-8 rounded-md text-[11px] sm:text-xs">
                   <SelectValue placeholder="Choose quantity" />
                 </SelectTrigger>
                 <SelectContent className="z-[100] w-[var(--radix-select-trigger-width)] rounded-xl border border-emerald-100 shadow-xl">
@@ -138,10 +138,10 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-primary to-primary/90 shadow-none hover:shadow-none hover:from-primary hover:to-primary/95 transition-colors duration-200 text-white font-medium focus-visible:ring-offset-0"
+                className="h-8 w-full bg-gradient-to-r from-primary to-primary/90 text-xs font-medium text-white transition-colors duration-200 hover:from-primary hover:to-primary/95 hover:shadow-none shadow-none focus-visible:ring-offset-0 sm:h-9 sm:text-sm"
                 onClick={() => addItem(product, 1, selectedUnit, selectedPricing?.price ?? product.price)}
               >
-                <Plus className="h-4 w-4 mr-1.5" />
+                <Plus className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Add to Cart
               </Button>
             </motion.div>
@@ -149,7 +149,7 @@ export function ProductCard({ product, isNew = false }: ProductCardProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 p-1.5 w-full justify-center"
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 p-1.5"
             >
               <motion.button
                 whileTap={{ scale: 0.85 }}

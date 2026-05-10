@@ -37,12 +37,28 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, style, onMouseEnter, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+    const isDefaultVariant = variant === "default" || !variant;
+    
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (isDefaultVariant) {
+        (e.currentTarget as HTMLButtonElement).style.backgroundImage = 'linear-gradient(to right, rgb(5, 150, 105), rgb(34, 197, 94))';
+      }
+      onMouseEnter?.(e);
+    };
+
+    const mergedStyle = {
+      ...(isDefaultVariant ? { backgroundImage: 'linear-gradient(to right, rgb(5, 150, 105), rgb(34, 197, 94))' } : {}),
+      ...style
+    };
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        style={mergedStyle}
+        onMouseEnter={handleMouseEnter}
         {...props}
       />
     );

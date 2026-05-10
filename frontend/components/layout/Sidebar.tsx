@@ -79,7 +79,7 @@ export function Sidebar() {
     <aside
       className={cn(
         "fixed inset-y-0 left-0 z-40 flex flex-col overflow-hidden border-r bg-background transition-[width] duration-500 ease-in-out",
-        sidebarOpen ? "w-64" : "w-16"
+        sidebarOpen ? "w-64 md:w-64" : "w-16 md:w-16"
       )}
     >
       <div className="flex h-16 items-center justify-start border-b px-2">
@@ -96,7 +96,7 @@ export function Sidebar() {
           <span
             className={cn(
               "overflow-hidden whitespace-nowrap text-base font-semibold leading-none text-foreground transition-[max-width,opacity,transform] duration-300 ease-in-out",
-              sidebarOpen ? "ml-2 max-w-24 translate-x-0 opacity-100" : "max-w-0 -translate-x-2 opacity-0"
+              sidebarOpen ? "max-w-40 translate-x-0 opacity-100" : "max-w-0 -translate-x-2 opacity-0"
             )}
           >
             Nmart
@@ -127,8 +127,8 @@ export function Sidebar() {
                 <Icon className="h-4 w-4 shrink-0" />
                 <span
                   className={cn(
-                    "overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-300 ease-in-out",
-                    sidebarOpen ? "max-w-40 translate-x-0 opacity-100" : "max-w-0 -translate-x-2 opacity-0"
+                      "overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-300 ease-in-out",
+                      sidebarOpen ? "max-w-40 translate-x-0 opacity-100" : "max-w-0 -translate-x-2 opacity-0"
                   )}
                 >
                   {t(item.labelKey)}
@@ -141,11 +141,11 @@ export function Sidebar() {
 
       <div className={cn("border-t py-3", sidebarOpen ? "px-4" : "px-2")}>
         <div className={cn("flex items-center", sidebarOpen ? "justify-between gap-2" : "justify-start") }>
-          {sidebarOpen && <LanguageSwitcher />}
+          {sidebarOpen && <div className="hidden md:block"><LanguageSwitcher /></div>}
           <div className={cn("flex items-center gap-2", !sidebarOpen && "flex-col") }>
             <Button variant="ghost" size={sidebarOpen ? "sm" : "icon"} onClick={logout}>
               {!sidebarOpen && <LogOut className="h-4 w-4" />}
-              {sidebarOpen ? t("sidebar.logout") : null}
+              {sidebarOpen ? <span className="inline-block">{t("sidebar.logout")}</span> : null}
             </Button>
           </div>
         </div>

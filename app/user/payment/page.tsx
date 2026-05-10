@@ -201,11 +201,11 @@ export default function PaymentPage() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5 sm:space-y-6">
       <BackButton />
 
       <div>
-        <h1 className="text-2xl font-bold">Choose payment method</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Choose payment method</h1>
         <p className="text-sm text-muted-foreground mt-1">Select your preferred option and complete payment.</p>
       </div>
 
@@ -214,7 +214,7 @@ export default function PaymentPage() {
           <CardTitle>Payment methods</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {methodOptions.map((option) => {
               const Icon = option.icon;
               const selected = method === option.key;
@@ -223,7 +223,7 @@ export default function PaymentPage() {
                   key={option.key}
                   type="button"
                   onClick={() => setMethod(option.key)}
-                  className={`rounded-lg border p-4 text-left transition ${
+                  className={`rounded-lg border p-3 text-left transition sm:p-4 ${
                     selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
                   }`}
                 >
@@ -251,7 +251,7 @@ export default function PaymentPage() {
                   width={400}
                   height={400}
                   unoptimized
-                  className="w-full max-w-xs rounded-lg border border-border bg-black/5"
+                  className="w-full max-w-[14rem] rounded-lg border border-border bg-black/5 sm:max-w-xs"
                   onError={() => {
                     if (qrPreview !== UPI_QR_FALLBACK_PATH) {
                       setQrPreview(UPI_QR_FALLBACK_PATH);
@@ -261,7 +261,7 @@ export default function PaymentPage() {
                   }}
                 />
               ) : (
-                <div className="w-full max-w-xs rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
+                <div className="w-full max-w-[14rem] rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted-foreground sm:max-w-xs">
                   UPI QR image not found.
                 </div>
               )}
@@ -302,9 +302,9 @@ export default function PaymentPage() {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => router.push("/user/checkout")}>Back to checkout</Button>
-            <Button className="bg-gradient-to-r from-primary to-primary/90" onClick={() => void handlePlaceOrder()} disabled={placingOrder}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <Button className="w-full sm:w-auto" variant="outline" onClick={() => router.push("/user/checkout")}>Back to checkout</Button>
+            <Button className="w-full bg-gradient-to-r from-primary to-primary/90 sm:w-auto" onClick={() => void handlePlaceOrder()} disabled={placingOrder}>
               {placingOrder ? "Placing order..." : "Confirm payment & place order"}
             </Button>
           </div>

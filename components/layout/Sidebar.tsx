@@ -70,9 +70,18 @@ export function Sidebar() {
 	const pathname = usePathname();
 	const sidebarOpen = useUIStore((s) => s.sidebarOpen);
 	const toggleSidebar = useUIStore((s) => s.toggleSidebar);
+	const openAuthDialog = useUIStore((s) => s.openAuthDialog);
+	const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 	const logout = useAuthStore((s) => s.logout);
 
 	const nav = getNav(pathname);
+	const requiresAuth = (href: string) => href === "/user/orders" || href === "/user/profile";
+	const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+		if (isAuthenticated || !requiresAuth(href)) return;
+		event.preventDefault();
+		openAuthDialog("Please log in or sign up to access your orders and profile.");
+	};
+
 	if (nav.length === 0) return null;
 
 	return (
@@ -114,6 +123,7 @@ export function Sidebar() {
 							<Link
 								key={item.href}
 								href={item.href}
+								onClick={(event) => handleNavClick(event, item.href)}
 								title={sidebarOpen ? undefined : t(item.labelKey)}
 								className={cn(
 									"rounded-lg py-2.5 text-sm font-medium transition-colors duration-200",

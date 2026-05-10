@@ -37,13 +37,13 @@ export default function UserProfilePage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{t("profile.title")}</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">{t("profile.title")}</h1>
         <p className="text-muted-foreground">{t("profile.subtitle")}</p>
       </div>
       <Card className="glass-card border-white/20">
         <CardHeader>
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Avatar className="h-14 w-14 sm:h-16 sm:w-16">
               <AvatarFallback className="text-xl">{user?.name?.slice(0, 2).toUpperCase() ?? "U"}</AvatarFallback>
             </Avatar>
             <div>

@@ -20,9 +20,11 @@ type HeaderProps = {
 export function Header({ className }: HeaderProps) {
 	const pathname = usePathname();
 	const user = useAuthStore((s) => s.user);
+	const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 	const cartItems = useCartStore((s) => s.items);
 	const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 	const setCartOpen = useUIStore((s) => s.setCartOpen);
+	const openAuthDialog = useUIStore((s) => s.openAuthDialog);
 	const toggleSidebar = useUIStore((s) => s.toggleSidebar);
 	const [notiOpen, setNotiOpen] = useState(false);
 	const readByUser = useNotificationStore((s) => s.readByUser);
@@ -132,7 +134,13 @@ export function Header({ className }: HeaderProps) {
 								<Button
 									variant="ghost"
 									size="sm"
-									onClick={() => setCartOpen(true)}
+									onClick={() => {
+										if (!isAuthenticated) {
+											openAuthDialog("Please log in or sign up to view your cart and continue checkout.");
+											return;
+										}
+										setCartOpen(true);
+									}}
 									className="relative rounded-lg border border-gray-200 px-3 py-2 shadow-sm transition hover:shadow-md"
 								>
 									<ShoppingCart className="h-5 w-5" />

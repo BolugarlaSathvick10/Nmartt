@@ -34,7 +34,7 @@ export default function SupportPage() {
 
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t("support.title")}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t("support.title")}</h1>
           <p className="text-gray-600 mt-2">{t("support.subtitle")}</p>
         </div>
 
@@ -52,7 +52,7 @@ export default function SupportPage() {
           </Card>
         </motion.div>
 
-        <motion.div variants={container} className="grid md:grid-cols-3 gap-6">
+        <motion.div variants={container} className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
           <motion.div variants={item}>
             <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow h-full">
               <div className="flex items-start gap-4">

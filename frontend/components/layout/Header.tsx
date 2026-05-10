@@ -100,7 +100,7 @@ export function Header({ className }: HeaderProps) {
         className
       )}
     >
-      <div className="flex h-full w-full items-center justify-between px-6">
+      <div className="flex h-full w-full items-center justify-between px-3 sm:px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -114,7 +114,7 @@ export function Header({ className }: HeaderProps) {
           <Logo className="text-2xl" />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
           {pathname.includes("/user") && (
             <>
               <div className="relative">
@@ -123,7 +123,7 @@ export function Header({ className }: HeaderProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => setNotiOpen((prev) => !prev)}
-                    className="relative rounded-lg border border-gray-200 px-3 py-2 shadow-sm transition hover:shadow-md"
+                    className="relative rounded-lg border border-gray-200 px-2.5 py-2 shadow-sm transition hover:shadow-md sm:px-3"
                   >
                     <Bell className="h-5 w-5" />
                     <AnimatePresence>
@@ -147,7 +147,7 @@ export function Header({ className }: HeaderProps) {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
-                      className="absolute right-0 mt-2 w-80 rounded-xl border bg-background p-3 shadow-xl"
+                      className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-4rem))] rounded-xl border bg-background p-3 shadow-xl"
                     >
                       <div className="mb-2 flex items-center justify-between">
                         <p className="text-sm font-semibold">Notifications</p>
@@ -190,7 +190,7 @@ export function Header({ className }: HeaderProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => setCartOpen(true)}
-                  className="relative rounded-lg border border-gray-200 px-3 py-2 shadow-sm transition hover:shadow-md"
+                  className="relative rounded-lg border border-gray-200 px-2.5 py-2 shadow-sm transition hover:shadow-md sm:px-3"
                 >
                   <ShoppingCart className="h-5 w-5" />
                   <AnimatePresence>
@@ -209,7 +209,7 @@ export function Header({ className }: HeaderProps) {
               </motion.div>
             </>
           )}
-          <div className="text-sm text-muted-foreground">{user?.name ?? "Nmart"}</div>
+          <div className="hidden text-sm text-muted-foreground sm:block">{user?.name ?? "Nmart"}</div>
         </div>
       </div>
     </header>

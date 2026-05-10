@@ -6,13 +6,18 @@ import { cn } from "@/lib/utils";
 import { Container } from "@/components/layout/Container";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
+import GuestBanner from "@/components/guest/GuestBanner";
 import { useAuthStore, useUIStore } from "@/store";
 
 function getRequiredRole(path: string): string | null {
 	if (path.startsWith("/admin")) return "admin";
 	if (path.startsWith("/pm")) return "pm";
 	if (path.startsWith("/delivery")) return "delivery";
-	if (path.startsWith("/user")) return "user";
+	if (path.startsWith("/user/checkout")) return "user";
+	if (path.startsWith("/user/payment")) return "user";
+	if (path.startsWith("/user/profile")) return "user";
+	if (path.startsWith("/user/orders")) return "user";
+	if (path.startsWith("/user/order-confirmation")) return "user";
 	return null;
 }
 
@@ -23,17 +28,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	const user = useAuthStore((s) => s.user);
 	const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 	const sidebarOpen = useUIStore((s) => s.sidebarOpen);
+	const requiredRole = getRequiredRole(pathname);
 
 	useEffect(() => {
 		if (!hasHydrated) return;
 
-		if (!isAuthenticated || !user) {
+		if (requiredRole && !isAuthenticated) {
 			router.replace("/login");
 			return;
 		}
 
-		const requiredRole = getRequiredRole(pathname);
-		if (requiredRole && requiredRole !== user.role) {
+		if (requiredRole && isAuthenticated && user && requiredRole !== user.role) {
 			const roleHome =
 				user.role === "admin"
 					? "/admin"
@@ -46,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 		}
 	}, [hasHydrated, isAuthenticated, pathname, router, user]);
 
-	if (!hasHydrated || !isAuthenticated || !user) {
+	if (!hasHydrated && requiredRole) {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-muted/30">
 				<span className="text-sm text-muted-foreground">Loading workspace...</span>
@@ -58,6 +63,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 		<div className="min-h-screen bg-muted/20">
 			<Sidebar />
 			<Header />
+			{pathname.startsWith("/user") && !isAuthenticated && <GuestBanner />}
 			<main
 				className={cn(
 					"mt-16 transition-[padding-left] duration-500 ease-in-out",
@@ -65,7 +71,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 				)}
 				style={{
 					height: "calc(100vh - 4rem)",
-					overflowY: "auto"
+					overflowY: "auto",
 				}}
 			>
 				<Container>{children}</Container>

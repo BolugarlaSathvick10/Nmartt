@@ -6,7 +6,7 @@ import Image from "next/image";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, Minus, Plus, Trash2, X } from "lucide-react";
-import { useCartStore } from "@/store";
+import { useAuthStore, useCartStore, useUIStore } from "@/store";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/utils";
 import { localizeCategoryName, localizeProductName } from "@/lib/localization";
@@ -24,6 +24,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [mounted, setMounted] = useState(false);
   const { items, updateQuantity, removeItem, totalItems, totalAmount } =
     useCartStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const openAuthDialog = useUIStore((s) => s.openAuthDialog);
   const t = useTranslations();
   const locale = useLocale();
 
@@ -45,6 +47,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   const goCheckout = () => {
     onClose();
+    if (!isAuthenticated) {
+      openAuthDialog("Login to place your order and continue to checkout.");
+      return;
+    }
     router.push("/user/checkout");
   };
 

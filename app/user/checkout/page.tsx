@@ -121,7 +121,7 @@ function CouponBox({ onCouponRateChange }: { onCouponRateChange: (rate: number) 
           </SelectContent>
         </Select>
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <Input
           placeholder={t("checkout.enterCouponCode")}
           value={coupon}
@@ -133,8 +133,8 @@ function CouponBox({ onCouponRateChange }: { onCouponRateChange: (rate: number) 
           }}
           className="flex-1"
         />
-        <Button onClick={handleApply} variant="outline">{t("checkout.apply")}</Button>
-        <Button onClick={handleRemoveCoupon} variant="ghost">{t("checkout.removeCoupon")}</Button>
+        <Button onClick={handleApply} variant="outline" className="sm:w-auto">{t("checkout.apply")}</Button>
+        <Button onClick={handleRemoveCoupon} variant="ghost" className="sm:w-auto">{t("checkout.removeCoupon")}</Button>
       </div>
       {error && <p className="text-xs text-destructive">{error}</p>}
       {applied && <p className="text-xs text-green-600">{t("checkout.couponApplied", { code: applied })}</p>}
@@ -289,7 +289,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-        <h1 className="text-2xl font-bold">{t("checkout.title")}</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">{t("checkout.title")}</h1>
         <Card className="glass-card border-white/20">
           <CardContent className="py-8 text-center text-muted-foreground">
             {t("checkout.cartEmpty")}{" "}
@@ -301,8 +301,8 @@ export default function CheckoutPage() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-      <h1 className="text-2xl font-bold">{t("checkout.title")}</h1>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 sm:space-y-8">
+      <h1 className="text-xl font-bold sm:text-2xl">{t("checkout.title")}</h1>
 
       <Card className="glass-card border-white/20">
         <CardHeader>
@@ -315,7 +315,7 @@ export default function CheckoutPage() {
             <Label>{t("checkout.address")}</Label>
             <Input {...form.register("address", { required: true })} className="mt-1" placeholder={t("checkout.addressPlaceholder")} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label>{t("checkout.mobile")}</Label>
               <Input {...form.register("mobile", { required: true })} className="mt-1" />
@@ -384,10 +384,10 @@ export default function CheckoutPage() {
           {/* Coupon Input */}
           <CouponBox onCouponRateChange={setCouponDiscountRate} />
 
-          <ul className="space-y-2 mt-4">
+          <ul className="mt-4 space-y-2">
             {items.map(({ product, quantity, unit, unitPrice }) => (
-              <li key={`${product.id}-${unit}`} className="flex justify-between text-sm gap-3">
-                <span>
+              <li key={`${product.id}-${unit}`} className="flex items-start justify-between gap-3 text-sm">
+                <span className="min-w-0 pr-2">
                   {localizeProductName(product.name, locale)} × {quantity}
                   <span className="ml-2 text-xs text-muted-foreground">({unit})</span>
                 </span>

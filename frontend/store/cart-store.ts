@@ -151,6 +151,37 @@ export const useCartStore = create<CartState>()(
 
 useAuthStore.subscribe((state, prevState) => {
   if (state.user?.id !== prevState.user?.id) {
+    const cartState = useCartStore.getState();
+
+    // If a user just logged in, merge guest cart into the authenticated user's cart.
+    const prevUserId = prevState.user?.id ?? null;
+    const nextUserId = state.user?.id ?? null;
+
+    if (!prevUserId && nextUserId) {
+      const guestItems = cartState.cartsByUser["guest"] ?? [];
+      const userItems = cartState.cartsByUser[nextUserId] ?? [];
+
+      // Merge by product id + unit, summing quantities and keeping latest unitPrice
+      const merged: Record<string, import("@/types").CartItem> = {};
+
+      const push = (item: import("@/types").CartItem) => {
+        const key = `${item.product.id}::${item.unit}`;
+        if (!merged[key]) merged[key] = { ...item };
+        else merged[key].quantity = merged[key].quantity + item.quantity;
+      };
+
+      userItems.forEach(push);
+      guestItems.forEach(push);
+
+      const nextItems = Object.values(merged);
+
+      useCartStore.setState((s) => ({
+        items: nextItems,
+        cartsByUser: { ...s.cartsByUser, [nextUserId]: nextItems, guest: [] },
+      }));
+    }
+
+    // Sync items for the newly active user (or guest)
     useCartStore.getState().syncForCurrentUser();
   }
 });

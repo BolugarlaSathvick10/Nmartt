@@ -81,7 +81,7 @@ export default function UserHomePage() {
   const hasSearchResults = search.length > 0;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 sm:space-y-8">
       <motion.section
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -130,7 +130,7 @@ export default function UserHomePage() {
             </div>
 
             {filtered.length > 0 ? (
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-5 lg:gap-6">
                 {filtered.map((p) => (
                   <ProductCard
                     key={p.id}
@@ -139,7 +139,7 @@ export default function UserHomePage() {
                 ))}
               </div>
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-10 text-center sm:py-12">
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
                   <Search className="h-6 w-6 text-muted-foreground" />
                 </div>
@@ -172,7 +172,7 @@ export default function UserHomePage() {
                 {t("home.categories")}
               </h2>
               <div className="overflow-x-auto pb-2">
-                <div className="flex gap-2 min-w-max">
+                <div className="flex min-w-max gap-2">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                       variant={categoryFilter === "all" ? "default" : "outline"}
@@ -208,7 +208,7 @@ export default function UserHomePage() {
               </h2>
 
               {filtered.length > 0 ? (
-                <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-5 lg:gap-6">
                   {filtered.map((p) => (
                     <ProductCard
                       key={p.id}
@@ -217,7 +217,7 @@ export default function UserHomePage() {
                   ))}
                 </div>
               ) : (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-10 text-center sm:py-12">
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
                     <ShoppingCart className="h-6 w-6 text-muted-foreground" />
                   </div>
